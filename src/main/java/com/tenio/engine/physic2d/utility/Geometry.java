@@ -212,6 +212,15 @@ public final class Geometry {
     return temp.getDistanceSqrValue(vectorP);
   }
 
+  /**
+   * Determine if two segments are intersected.
+   *
+   * @param vectorA the vector A
+   * @param vectorB the vector B
+   * @param vectorC the vector C
+   * @param vectorD the vector D
+   * @return <b>true</b> if they are intersected, <b>false</b> otherwise
+   */
   public static boolean isTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB, Vector2 vectorC,
                                               Vector2 vectorD) {
     float rtop = (vectorA.y - vectorC.y) * (vectorD.x - vectorC.x)
@@ -237,9 +246,17 @@ public final class Geometry {
     // lines do not intersect
   }
 
-  // Given 2 lines segment in 2D space AB, CD this returns true if an intersection
-  // occurs and sets dist as parameter to the distance the intersection occurs
-  // along AB. Also sets the 2d vector point to the point of intersection
+  /**
+   * Given 2 lines segment in 2D space AB, CD this returns true if an intersection
+   * occurs and sets dist as parameter to the distance the intersection occurs
+   * along AB. Also sets the 2d vector point to the point of intersection.
+   *
+   * @param vectorA the vector A
+   * @param vectorB the vector B
+   * @param vectorC the vector C
+   * @param vectorD the vector D
+   * @return the point where two segments are intersected
+   */
   public static Vector2 getPointTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB,
                                                     Vector2 vectorC, Vector2 vectorD) {
 
@@ -270,9 +287,17 @@ public final class Geometry {
     return null;
   }
 
-  // Given 2 lines segment in 2D space AB, CD this returns true if an intersection
-  // occurs and sets dist as parameter to the distance the intersection occurs
-  // along AB
+  /**
+   * Given 2 lines segment in 2D space AB, CD this returns true if an intersection
+   * occurs and sets dist as parameter to the distance the intersection occurs
+   * along AB.
+   *
+   * @param vectorA the vector A
+   * @param vectorB the vector B
+   * @param vectorC the vector C
+   * @param vectorD the vector D
+   * @return the distance the intersection occurs along AB
+   */
   public static float getDistanceTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB,
                                                      Vector2 vectorC, Vector2 vectorD) {
 
@@ -302,7 +327,13 @@ public final class Geometry {
     return -1;
   }
 
-  // Tests two polygons for intersection. Does not check for enclosure!
+  /**
+   * Tests two polygons for intersection. Does not check for enclosure!
+   *
+   * @param object1 object 1
+   * @param object2 object 2
+   * @return <b>true</b> if two polygons are intersected, <b>false</b> otherwise
+   */
   public static boolean isTwoObjectsIntersect(List<Vector2> object1, List<Vector2> object2) {
     // test each line segment of object1 against each segment of object2
     for (int r = 0; r < object1.size() - 1; ++r) {
@@ -317,8 +348,15 @@ public final class Geometry {
     return false;
   }
 
-  // Tests a line segment against a polygon for intersection Does not check for
-  // enclosure!
+  /**
+   * Tests a line segment against a polygon for intersection Does not check for
+   * enclosure.
+   *
+   * @param vectorA the vector A
+   * @param vectorB the vector B
+   * @param object  the object
+   * @return <b>true</b> if there is intersection between a line and a polygon
+   */
   public static boolean isSegmentObjectIntersect(final Vector2 vectorA, final Vector2 vectorB,
                                                  final List<Vector2> object) {
     // test AB against each segment of object
@@ -331,8 +369,18 @@ public final class Geometry {
     return false;
   }
 
-  // Returns true if the two circles overlap {center (x,y) round r} Include
-  // enclosed case
+  /**
+   * Returns true if the two circles overlap {center (x,y) round r} Include
+   * enclosed case.
+   *
+   * @param x1 circle 1 center x
+   * @param y1 circle 1 center y
+   * @param r1 circle 1 radius
+   * @param x2 circle 2 center x
+   * @param y2 circle 2 center y
+   * @param r2 circle 2 radius
+   * @return <b>true</b> if two circles are overlapped, <b>false</b> otherwise
+   */
   public static boolean isTwoCirclesOverlapped(float x1, float y1, float r1, float x2, float y2,
                                                float r2) {
     float distBetweenCenters = (float) Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -340,8 +388,16 @@ public final class Geometry {
     return (distBetweenCenters < (r1 + r2)) || (distBetweenCenters < Math.abs(r1 - r2));
   }
 
-  // Returns true if the two circles overlap {center (x,y) round r} Include
-  // enclosed case
+  /**
+   * Returns true if the two circles overlap {center (x,y) round r} Include
+   * enclosed case.
+   *
+   * @param circle1 circle 1 origin
+   * @param radius1 circle 1 radius
+   * @param circle2 circle 2 origin
+   * @param radius2 circle 2 radius
+   * @return <b>true</b> if two circles are overlapped, <b>false</b> otherwise
+   */
   public static boolean isTwoCirclesOverlapped(Vector2 circle1, float radius1, Vector2 circle2,
                                                float radius2) {
     float distBetweenCenters =
@@ -352,7 +408,17 @@ public final class Geometry {
         || (distBetweenCenters < Math.abs(radius1 - radius2));
   }
 
-  // Returns true if one circle encloses the other {center (x,y) round r}
+  /**
+   * Determines if one circle encloses the other.
+   *
+   * @param x1 circle 1 center x
+   * @param y1 circle 1 center y
+   * @param r1 circle 1 radius
+   * @param x2 circle 2 center x
+   * @param y2 circle 2 center y
+   * @param r2 circle 2 radius
+   * @return <b>true</b> if one circle encloses the other, <b>false</b> otherwise
+   */
   public static boolean isTwoCirclesEnclosed(float x1, float y1, float r1, float x2, float y2,
                                              float r2) {
     float distBetweenCenters = (float) Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -360,10 +426,18 @@ public final class Geometry {
     return distBetweenCenters < Math.abs(r1 - r2);
   }
 
-  // Given two circles This function calculates the intersection points of any
-  // overlap.
-  // returns false if no overlap found
-  // see http://astronomy.swin.edu.au/~pbourke/geometry/2circle/
+  /**
+   * Given two circles, this function calculates the intersection points of any overlap.
+   * see http://astronomy.swin.edu.au/~pbourke/geometry/2circle/
+   *
+   * @param x1 circle 1 center x
+   * @param y1 circle 1 center y
+   * @param r1 circle 1 radius
+   * @param x2 circle 2 center x
+   * @param y2 circle 2 center y
+   * @param r2 circle 2 radius
+   * @return a list of intersection points
+   */
   public static float[] getTwoCirclesIntersectionPoints(float x1, float y1, float r1, float x2,
                                                         float y2, float r2) {
     // first check to see if they overlap
@@ -407,6 +481,19 @@ public final class Geometry {
   // Tests to see if two circles overlap and if so calculates the area defined by
   // the union
   // see http://mathforum.org/library/drmath/view/54785.html
+
+  /**
+   * Tests to see if two circles overlap and if so calculates the area defined by the union.
+   * see http://mathforum.org/library/drmath/view/54785.html
+   *
+   * @param x1 circle 1 center x
+   * @param y1 circle 1 center y
+   * @param r1 circle 1 radius
+   * @param x2 circle 2 center x
+   * @param y2 circle 2 center y
+   * @param r2 circle 2 radius
+   * @return the union if two circles are overlap
+   */
   public static float getTwoCirclesIntersectionArea(float x1, float y1, float r1, float x2,
                                                     float y2, float r2) {
     // first calculate the intersection points
@@ -425,9 +512,8 @@ public final class Geometry {
 
     // Then we find the segment of each of the circles cut off by the
     // chord CD, by taking the area of the sector of the circle BCD and
-    // subtracting the area of triangle BCD. Similarly we find the area
+    // subtracting the area of triangle BCD. Similarly, we find the area
     // of the sector ACD and subtract the area of triangle ACD.
-
     float area =
         (float) (0.5f * cbd * r2 * r2 - 0.5f * r2 * r2 * Math.sin(cbd) + 0.5f * cad * r1 * r1
             - 0.5f * r1 * r1 * Math.sin(cad));
@@ -440,7 +526,14 @@ public final class Geometry {
     return MathUtility.PI * radius * radius;
   }
 
-  // Returns true if the point p is within the radius of the given circle
+  /**
+   * Check if the point p is within the radius of the given circle.
+   *
+   * @param center the circle origin
+   * @param radius the circle radius
+   * @param point  the point
+   * @return <b>true</b> if the point is within the radius of the circle, <b>false</b> otherwise
+   */
   public static boolean isPointInCircle(Vector2 center, float radius, Vector2 point) {
     var temp = Vector2.newInstance().set(point).sub(center);
     float distFromCenterSquared = temp.getLengthSqr();
@@ -448,8 +541,15 @@ public final class Geometry {
     return distFromCenterSquared < (radius * radius);
   }
 
-  // Returns true if the line segment AB intersects with a circle at position vectorC
-  // with radius
+  /**
+   * Determines if the line segment AB intersects with a circle at position vectorC with radius.
+   *
+   * @param vectorA vector A
+   * @param vectorB vector B
+   * @param vectorC circle origin
+   * @param radius  circle radius
+   * @return <b>true</b> or <b>false</b>
+   */
   public static boolean isSegmentCircleIntersectAtPoint(Vector2 vectorA, Vector2 vectorB,
                                                         Vector2 vectorC,
                                                         float radius) {
@@ -460,10 +560,18 @@ public final class Geometry {
     return distToLineSqr < radius * radius;
   }
 
-  // Given a line segment AB and a circle position and radius, This function
-  // determines if there is an intersection and stores the position of the closest
-  // intersection in the reference IntersectionPoint
-  // returns false if no intersection point is found
+  /**
+   * Given a line segment AB and a circle position and radius, This function determines if there
+   * is an intersection and stores the position of the closest intersection in the reference
+   * IntersectionPoint returns false if no intersection point is found.
+   *
+   * @param vectorA           vector A
+   * @param vectorB           vector B
+   * @param vectorC           circle origin
+   * @param radius            circle radius
+   * @param intersectionPoint intersection point
+   * @return <b>true</b> or <b>false</b>
+   */
   public static boolean isSegmentCircleClosestIntersectPoint(Vector2 vectorA, Vector2 vectorB,
                                                              Vector2 vectorC,
                                                              float radius,

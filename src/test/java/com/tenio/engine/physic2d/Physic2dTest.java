@@ -22,9 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-package com.tenio.engine.ecs.model.component;
+package com.tenio.engine.physic2d;
 
-import com.tenio.engine.ecs.basis.Component;
-
-public final class View implements Component {
+public final class Physic2dTest {
 }

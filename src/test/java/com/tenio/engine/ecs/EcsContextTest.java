@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
-import com.tenio.engine.ecs.model.GameComponents;
+import com.tenio.engine.ecs.model.GameComponent;
 import com.tenio.engine.ecs.model.GameContext;
 import com.tenio.engine.ecs.model.GameEntity;
 import com.tenio.engine.ecs.model.component.Position;
@@ -47,8 +47,8 @@ public final class EcsContextTest {
 
   @BeforeEach
   public void initialize() {
-    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
-        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    var info = new ContextInfo("Game", GameComponent.getComponentNames(),
+        GameComponent.getComponentTypes(), GameComponent.getNumberComponents());
     gameContext = new GameContext(info);
 
     gameEntity = gameContext.createEntity();
@@ -98,14 +98,14 @@ public final class EcsContextTest {
     position.x = 10;
     position.y = 10;
 
-    ((Position) gameEntity.getComponent(GameComponents.POSITION)).x = position.x;
-    ((Position) gameEntity.getComponent(GameComponents.POSITION)).y = position.y;
+    ((Position) gameEntity.getComponent(GameComponent.POSITION)).x = position.x;
+    ((Position) gameEntity.getComponent(GameComponent.POSITION)).y = position.y;
 
     assertAll("replacePosition",
         () -> assertEquals(position.x,
-            ((Position) gameEntity.getComponent(GameComponents.POSITION)).x),
+            ((Position) gameEntity.getComponent(GameComponent.POSITION)).x),
         () -> assertEquals(position.y,
-            ((Position) gameEntity.getComponent(GameComponents.POSITION)).y));
+            ((Position) gameEntity.getComponent(GameComponent.POSITION)).y));
   }
 
   @Test
@@ -118,9 +118,9 @@ public final class EcsContextTest {
 
     assertAll("replacePosition",
         () -> assertEquals(position.x,
-            ((Position) gameEntity.getComponent(GameComponents.POSITION)).x),
+            ((Position) gameEntity.getComponent(GameComponent.POSITION)).x),
         () -> assertEquals(position.y,
-            ((Position) gameEntity.getComponent(GameComponents.POSITION)).y));
+            ((Position) gameEntity.getComponent(GameComponent.POSITION)).y));
   }
 
   @Test

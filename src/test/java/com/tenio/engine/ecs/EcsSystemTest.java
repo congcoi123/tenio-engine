@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
-import com.tenio.engine.ecs.model.GameComponents;
+import com.tenio.engine.ecs.model.GameComponent;
 import com.tenio.engine.ecs.model.GameContext;
 import com.tenio.engine.ecs.model.system.TestSystem;
 import com.tenio.engine.ecs.system.implement.Systems;
@@ -46,8 +46,8 @@ public final class EcsSystemTest {
   public void initialize() {
     systems = new Systems();
 
-    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
-        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    var info = new ContextInfo("Game", GameComponent.getComponentNames(),
+        GameComponent.getComponentTypes(), GameComponent.getNumberComponents());
     var context = new GameContext(info);
 
     testSystem = new TestSystem(context);

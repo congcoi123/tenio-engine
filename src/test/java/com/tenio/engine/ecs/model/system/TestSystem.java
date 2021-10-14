@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs.model.system;
 
 import com.tenio.engine.ecs.basis.Context;
@@ -32,60 +33,56 @@ import com.tenio.engine.ecs.system.TearDownSystem;
 import com.tenio.engine.ecs.system.implement.AbstractSystem;
 import com.tenio.engine.physic2d.graphic.Paint;
 
-/**
- * @author kong
- */
 public final class TestSystem extends AbstractSystem<GameEntity>
-		implements InitializeSystem, ExecuteSystem, RenderSystem, TearDownSystem {
+    implements InitializeSystem, ExecuteSystem, RenderSystem, TearDownSystem {
 
-	private boolean __flagInitialize;
-	private boolean __flagExecute;
-	private boolean __flagRender;
-	private boolean __flagTearDown;
+  private boolean flagInitialize;
+  private boolean flagExecute;
+  private boolean flagRender;
+  private boolean flagTearDown;
 
-	public TestSystem(Context<GameEntity> context) {
-		super(context);
+  public TestSystem(Context<GameEntity> context) {
+    super(context);
 
-		__flagInitialize = false;
-		__flagExecute = false;
-		__flagRender = false;
-		__flagTearDown = false;
-	}
+    flagInitialize = false;
+    flagExecute = false;
+    flagRender = false;
+    flagTearDown = false;
+  }
 
-	@Override
-	public void initialize() {
-		__flagInitialize = true;
-	}
+  @Override
+  public void initialize() {
+    flagInitialize = true;
+  }
 
-	@Override
-	public void execute(float deltaTime) {
-		__flagExecute = true;
-	}
+  @Override
+  public void execute(float deltaTime) {
+    flagExecute = true;
+  }
 
-	@Override
-	public void render(Paint paint) {
-		__flagRender = true;
-	}
+  @Override
+  public void render(Paint paint) {
+    flagRender = true;
+  }
 
-	@Override
-	public void tearDown() {
-		__flagTearDown = true;
-	}
+  @Override
+  public void tearDown() {
+    flagTearDown = true;
+  }
 
-	public boolean isInitialized() {
-		return __flagInitialize;
-	}
+  public boolean isInitialized() {
+    return flagInitialize;
+  }
 
-	public boolean isExecuted() {
-		return __flagExecute;
-	}
+  public boolean isExecuted() {
+    return flagExecute;
+  }
 
-	public boolean isRendered() {
-		return __flagRender;
-	}
+  public boolean isRendered() {
+    return flagRender;
+  }
 
-	public boolean isTearDown() {
-		return __flagTearDown;
-	}
-
+  public boolean isTearDown() {
+    return flagTearDown;
+  }
 }

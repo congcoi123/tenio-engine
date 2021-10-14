@@ -124,7 +124,7 @@ public final class Path implements Renderable {
     for (int i = 0; i < numWaypoints; ++i) {
       float radialDist = MathUtility.randInRange(smaller * 0.2f, smaller);
 
-      var temp = Transformation.vec2DRotateAroundOrigin(radialDist, 0, i * spacing);
+      var temp = Transformation.vec2dRotateAroundOrigin(radialDist, 0, i * spacing);
 
       temp.x += midX;
       temp.y += midY;

@@ -35,7 +35,7 @@ import com.tenio.common.exception.NullElementPoolException;
 import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.Entity;
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
-import com.tenio.engine.ecs.model.GameComponents;
+import com.tenio.engine.ecs.model.GameComponent;
 import com.tenio.engine.ecs.model.GameEntity;
 import com.tenio.engine.ecs.pool.EntityPool;
 import org.junit.jupiter.api.AfterEach;
@@ -48,8 +48,8 @@ public final class EntityPoolTest {
 
   @BeforeEach
   public void initialize() {
-    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
-        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    var info = new ContextInfo("Game", GameComponent.getComponentNames(),
+        GameComponent.getComponentTypes(), GameComponent.getNumberComponents());
     entityPool = new EntityPool(GameEntity.class, info);
   }
 

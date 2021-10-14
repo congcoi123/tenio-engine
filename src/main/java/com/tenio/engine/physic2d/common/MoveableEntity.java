@@ -33,8 +33,6 @@ import com.tenio.engine.physic2d.math.Vector2;
  */
 public abstract class MoveableEntity extends BaseGameEntity {
 
-  // for calculations
-  private final Matrix3 matrix3 = Matrix3.newInstance();
   private final Vector2 velocity = Vector2.newInstance();
   private final Vector2 heading = Vector2.newInstance();
   private final Vector2 side = Vector2.newInstance();
@@ -236,7 +234,7 @@ public abstract class MoveableEntity extends BaseGameEntity {
 
     // The next few lines use a rotation matrix to rotate the player's heading
     // vector accordingly
-    matrix3.initialize();
+    var matrix3 = Matrix3.newInstance();
 
     // notice how the direction of rotation has to be determined when creating
     // the rotation matrix

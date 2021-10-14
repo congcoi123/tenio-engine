@@ -22,9 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-package com.tenio.engine.ecs.model.component;
+package com.tenio.engine.ecs.model;
 
-import com.tenio.engine.ecs.basis.Component;
+import com.tenio.engine.ecs.model.component.Animation;
+import com.tenio.engine.ecs.model.component.Motion;
+import com.tenio.engine.ecs.model.component.Position;
+import com.tenio.engine.ecs.model.component.View;
 
-public final class View implements Component {
+public final class GameComponent {
+
+  public static byte ANIMATION = 0;
+  public static byte MOTION = 1;
+  public static byte POSITION = 3;
+  public static byte VIEW = 4;
+
+  private static final int numberComponents = 5;
+  private static final String[] componentNames = {"Animation", "Motion", null, "Position", "View"};
+  private static final Class<?>[] componentTypes
+		  = {Animation.class, Motion.class, null, Position.class, View.class};
+
+  public static int getNumberComponents() {
+    return numberComponents;
+  }
+
+  public static String[] getComponentNames() {
+    return componentNames;
+  }
+
+  public static Class<?>[] getComponentTypes() {
+    return componentTypes;
+  }
 }
