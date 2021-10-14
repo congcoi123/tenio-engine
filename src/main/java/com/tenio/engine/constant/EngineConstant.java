@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.constant;
 
 /**
@@ -29,15 +30,16 @@ package com.tenio.engine.constant;
  */
 public final class EngineConstant {
 
-	private EngineConstant() {
-	}
+  /**
+   * It is used in the FSM pattern in which all entities can communicate with
+   * others by message in some delay time. The value below describes one entity
+   * can send a message immediately for others. It is also used for communication
+   * between a heart-beat with outside.
+   */
+  public static final double SEND_MSG_IMMEDIATELY = 0;
 
-	/**
-	 * It is used in the FSM pattern in which all entities can communicate with
-	 * others by message in some delay time. The value below describes one entity
-	 * can send a message immediately for others. It is also used for communication
-	 * between a heart-beat with outside.
-	 */
-	public static final double SEND_MSG_IMMEDIATELY = 0;
-
+  private EngineConstant() {
+    throw new UnsupportedOperationException("This class does not support to create a new "
+        + "instance");
+  }
 }

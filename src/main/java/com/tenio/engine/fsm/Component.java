@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.fsm;
 
 /**
@@ -31,20 +32,19 @@ package com.tenio.engine.fsm;
  */
 public abstract class Component<T> {
 
-	/**
-	 * A pointer to the agent that owns this instance
-	 */
-	protected final T __entity;
+  /**
+   * A pointer to the agent that owns this instance.
+   */
+  protected final T entity;
 
-	public Component(T entity) {
-		__entity = entity;
-	}
+  public Component(T entity) {
+    this.entity = entity;
+  }
 
-	/**
-	 * This method is called every frames
-	 * 
-	 * @param deltaTime the time between two consecutive frames
-	 */
-	public abstract void update(double deltaTime);
-
+  /**
+   * This method is called every frames.
+   *
+   * @param deltaTime the time between two consecutive frames
+   */
+  public abstract void update(double deltaTime);
 }

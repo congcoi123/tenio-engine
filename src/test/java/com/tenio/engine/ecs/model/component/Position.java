@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 package com.tenio.engine.ecs.model.component;
 
-import com.tenio.engine.ecs.bases.Component;
+import com.tenio.engine.ecs.basis.Component;
 
 /**
  * @author kong

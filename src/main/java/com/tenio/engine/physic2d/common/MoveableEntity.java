@@ -232,10 +232,9 @@ public abstract class MoveableEntity extends BaseGameEntity {
 		__matrix.transformVector2D(getHeading());
 		__matrix.transformVector2D(getVelocity());
 
-		// finally recreate m_vSide
+		// finally, recreate m_vSide
 		__setSide(getHeading().perpendicular());
 
 		return false;
 	}
-
 }

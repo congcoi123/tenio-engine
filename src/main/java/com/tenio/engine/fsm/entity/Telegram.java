@@ -21,10 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.fsm.entity;
 
-import com.tenio.common.utilities.TimeUtility;
-import com.tenio.engine.message.EMessage;
+import com.tenio.common.utility.TimeUtility;
+import com.tenio.engine.message.ExtraMessage;
 
 /**
  * This object is used for communication between entities.
@@ -32,137 +33,149 @@ import com.tenio.engine.message.EMessage;
 @SuppressWarnings("rawtypes")
 public class Telegram implements Comparable {
 
-	/**
-	 * These telegrams will be stored in a priority queue. Therefore the operator
-	 * needs to be overloaded so that the PQ can sort the telegrams by time
-	 * priority. Note how the times must be smaller than SmallestDelay apart before
-	 * two Telegrams are considered unique.
-	 */
-	public final static double SMALLEST_DELAY = 0.25f;
+  /**
+   * These telegrams will be stored in a priority queue. Therefore, the operator
+   * needs to be overloaded so that the PQ can sort the telegrams by time
+   * priority. Note how the times must be smaller than SmallestDelay apart before
+   * two Telegrams are considered unique.
+   */
+  public static final double SMALLEST_DELAY = 0.25f;
 
-	/**
-	 * The id of the sender
-	 */
-	private String __sender;
-	/**
-	 * The id of the receiver
-	 */
-	private String __receiver;
-	/**
-	 * The type of this message
-	 */
-	private int __type;
-	/**
-	 * The creation time
-	 */
-	private double __createdTime;
-	/**
-	 * The message will be sent after an interval time
-	 */
-	private double __delayTime;
-	/**
-	 * The extra information
-	 */
-	private EMessage __info;
+  /**
+   * The id of the sender.
+   */
+  private final String sender;
+  /**
+   * The id of the receiver.
+   */
+  private final String receiver;
+  /**
+   * The type of this message.
+   */
+  private final int type;
+  /**
+   * The creation time.
+   */
+  private double createdTime;
+  /**
+   * The message will be sent after an interval time.
+   */
+  private double delayTime;
+  /**
+   * The extra information.
+   */
+  private ExtraMessage info;
 
-	public Telegram() {
-		__createdTime = TimeUtility.currentTimeSeconds();
-		__delayTime = -1;
-		__sender = null;
-		__receiver = null;
-		__type = -1;
-	}
+  /**
+   * Initialization.
+   */
+  public Telegram() {
+    createdTime = TimeUtility.currentTimeSeconds();
+    delayTime = -1;
+    sender = null;
+    receiver = null;
+    type = -1;
+  }
 
-	public Telegram(double delayTime, String sender, String receiver, int type) {
-		this(delayTime, sender, receiver, type, null);
-	}
+  public Telegram(double delayTime, String sender, String receiver, int type) {
+    this(delayTime, sender, receiver, type, null);
+  }
 
-	public Telegram(double delayTime, String sender, String receiver, int type, EMessage info) {
-		__delayTime = delayTime;
-		__sender = sender;
-		__receiver = receiver;
-		__type = type;
-		__info = info;
-	}
+  /**
+   * Initialization.
+   *
+   * @param delayTime the delay time
+   * @param sender    the sender
+   * @param receiver  the receiver
+   * @param type      the type
+   * @param info      the information
+   */
+  public Telegram(double delayTime, String sender, String receiver, int type, ExtraMessage info) {
+    this.delayTime = delayTime;
+    this.sender = sender;
+    this.receiver = receiver;
+    this.type = type;
+    this.info = info;
+  }
 
-	public String getSender() {
-		return __sender;
-	}
+  public String getSender() {
+    return sender;
+  }
 
-	public String getReceiver() {
-		return __receiver;
-	}
+  public String getReceiver() {
+    return receiver;
+  }
 
-	public int getType() {
-		return __type;
-	}
+  public int getType() {
+    return type;
+  }
 
-	public double getDelayTime() {
-		return __delayTime;
-	}
+  public double getDelayTime() {
+    return delayTime;
+  }
 
-	public void setDelayTime(double delay) {
-		__delayTime = TimeUtility.currentTimeSeconds() + delay;
-	}
+  public void setDelayTime(double delay) {
+    delayTime = TimeUtility.currentTimeSeconds() + delay;
+  }
 
-	public double getCreatedTime() {
-		return __createdTime;
-	}
+  public double getCreatedTime() {
+    return createdTime;
+  }
 
-	public EMessage getInfo() {
-		return __info;
-	}
+  public ExtraMessage getInfo() {
+    return info;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof Telegram)) {
-			return false;
-		}
-		var t1 = this;
-		var t2 = (Telegram) o;
-		return (Math.abs(t1.getDelayTime() - t2.getDelayTime()) < SMALLEST_DELAY) && (t1.getSender() == t2.getSender())
-				&& (t1.getReceiver() == t2.getReceiver()) && (t1.getType() == t2.getType());
-	}
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Telegram)) {
+      return false;
+    }
+    var t1 = this;
+    var t2 = (Telegram) o;
+    return (Math.abs(t1.getDelayTime() - t2.getDelayTime()) < SMALLEST_DELAY)
+        && (t1.getSender() == t2.getSender())
+        && (t1.getReceiver() == t2.getReceiver()) && (t1.getType() == t2.getType());
+  }
 
-	/**
-	 * It is generally necessary to override the <b>hashCode</b> method whenever
-	 * equals method is overridden, so as to maintain the general contract for the
-	 * hashCode method, which states that equal objects must have equal hash codes.
-	 */
-	@Override
-	public int hashCode() {
-		int hash = 3;
-		hash = 89 * hash + __sender.hashCode();
-		hash = 89 * hash + __receiver.hashCode();
-		hash = 89 * hash + __type;
-		return hash;
-	}
+  /**
+   * It is generally necessary to override the <b>hashCode</b> method whenever
+   * equals method is overridden, to maintain the general contract for the
+   * hashCode method, which states that equal objects must have equal hash codes.
+   */
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 89 * hash + sender.hashCode();
+    hash = 89 * hash + receiver.hashCode();
+    hash = 89 * hash + type;
+    return hash;
+  }
 
-	@Override
-	public int compareTo(Object o2) {
-		var t1 = this;
-		var t2 = (Telegram) o2;
-		if (t1 == t2) {
-			return 0;
-		} else {
-			return (t1.getDelayTime() > t2.getDelayTime()) ? -1 : 1;
-		}
-	}
+  @Override
+  public int compareTo(Object o2) {
+    var t1 = this;
+    var t2 = (Telegram) o2;
+    if (t1 == t2) {
+      return 0;
+    } else {
+      return (t1.getDelayTime() > t2.getDelayTime()) ? -1 : 1;
+    }
+  }
 
-	@Override
-	public String toString() {
-		var builder = new StringBuilder();
-		builder.append("Time: ");
-		builder.append(__delayTime);
-		builder.append(", Sender: ");
-		builder.append(__sender);
-		builder.append(", Receiver: ");
-		builder.append(__receiver);
-		builder.append(", MsgType: ");
-		builder.append(__type);
-		builder.append(", Info: ");
-		builder.append(__info.toString());
-		return builder.toString();
-	}
-
+  @Override
+  public String toString() {
+    var builder = new StringBuilder();
+    builder.append("Time: ");
+    builder.append(delayTime);
+    builder.append(", Sender: ");
+    builder.append(sender);
+    builder.append(", Receiver: ");
+    builder.append(receiver);
+    builder.append(", MsgType: ");
+    builder.append(type);
+    builder.append(", Info: ");
+    builder.append(info.toString());
+    return builder.toString();
+  }
 }

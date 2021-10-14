@@ -21,9 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.heartbeat;
 
-import com.tenio.engine.message.EMessage;
+import com.tenio.engine.message.ExtraMessage;
 
 /**
  * The Java ExecutorService is a construct that allows you to pass a task to be
@@ -34,58 +35,57 @@ import com.tenio.engine.message.EMessage;
  */
 public interface HeartBeatManager {
 
-	/**
-	 * The number of maximum heart-beats that the server can handle.
-	 * 
-	 * @param maxHeartbeat the number of maximum heart-beats that the server can
-	 *                     handle
-	 * @throws Exception an exception
-	 */
-	void initialize(final int maxHeartbeat) throws Exception;
+  /**
+   * The number of maximum heart-beats that the server can handle.
+   *
+   * @param maxHeartbeat the number of maximum heart-beats that the server can
+   *                     handle
+   * @throws Exception an exception
+   */
+  void initialize(final int maxHeartbeat) throws Exception;
 
-	/**
-	 * Create a new heart-beat.
-	 * 
-	 * @param id        the unique id
-	 * @param heartbeat see {@link AbstractHeartBeat}
-	 */
-	void create(final String id, final AbstractHeartBeat heartbeat);
+  /**
+   * Create a new heart-beat.
+   *
+   * @param id        the unique id
+   * @param heartbeat see {@link AbstractHeartBeat}
+   */
+  void create(final String id, final AbstractHeartBeat heartbeat);
 
-	/**
-	 * Dispose a heart-beat.
-	 * 
-	 * @param id the unique id
-	 */
-	void dispose(final String id);
+  /**
+   * Dispose a heart-beat.
+   *
+   * @param id the unique id
+   */
+  void dispose(final String id);
 
-	/**
-	 * Check if a heart-beat is existed or not.
-	 * 
-	 * @param id the unique id
-	 * @return <b>true</b> if the corresponding heart-beat has existed
-	 */
-	boolean contains(final String id);
+  /**
+   * Check if a heart-beat is existed or not.
+   *
+   * @param id the unique id
+   * @return <b>true</b> if the corresponding heart-beat has existed
+   */
+  boolean contains(final String id);
 
-	/**
-	 * Destroy all heart-beats and clear all references.
-	 */
-	void clear();
+  /**
+   * Destroy all heart-beats and clear all references.
+   */
+  void clear();
 
-	/**
-	 * Send a message to a particular heart-beat with a delay time
-	 * 
-	 * @param id        the unique id
-	 * @param message   the message content, see {@link EMessage}
-	 * @param delayTime the delay time in seconds
-	 */
-	void sendMessage(final String id, final EMessage message, final double delayTime);
+  /**
+   * Send a message to a particular heart-beat with a delay time.
+   *
+   * @param id        the unique id
+   * @param message   the message content, see {@link ExtraMessage}
+   * @param delayTime the delay time in seconds
+   */
+  void sendMessage(final String id, final ExtraMessage message, final double delayTime);
 
-	/**
-	 * Send a message to a particular heart-beat with no delay time
-	 * 
-	 * @param id      the unique id
-	 * @param message the message content, see {@link EMessage}
-	 */
-	void sendMessage(final String id, final EMessage message);
-
+  /**
+   * Send a message to a particular heart-beat with no delay time.
+   *
+   * @param id      the unique id
+   * @param message the message content, see {@link ExtraMessage}
+   */
+  void sendMessage(final String id, final ExtraMessage message);
 }

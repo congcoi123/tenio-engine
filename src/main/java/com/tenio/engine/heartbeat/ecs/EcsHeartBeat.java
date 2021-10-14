@@ -21,79 +21,79 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.heartbeat.ecs;
 
-import com.tenio.engine.ecs.systems.System;
-import com.tenio.engine.ecs.systems.implement.Systems;
+import com.tenio.engine.ecs.system.System;
+import com.tenio.engine.ecs.system.implement.Systems;
 import com.tenio.engine.heartbeat.AbstractHeartBeat;
-import com.tenio.engine.message.EMessage;
+import com.tenio.engine.message.ExtraMessage;
 import com.tenio.engine.physic2d.graphic.Paint;
 
 /**
- * The ECS system base on heart-beat
- * 
+ * The ECS system base on heart-beat.
+ *
  * @see AbstractHeartBeat
  */
 public class EcsHeartBeat extends AbstractHeartBeat {
 
-	private final Systems __systems = new Systems();
+  private final Systems systems = new Systems();
 
-	public EcsHeartBeat(int viewWidth, int viewHeight) {
-		super(viewWidth, viewHeight);
-	}
+  public EcsHeartBeat(int viewWidth, int viewHeight) {
+    super(viewWidth, viewHeight);
+  }
 
-	public void addSystem(System system) {
-		__systems.add(system);
-	}
+  public void addSystem(System system) {
+    systems.add(system);
+  }
 
-	public void clearSystems() {
-		__systems.clearSystems();
-	}
+  public void clearSystems() {
+    systems.clearSystems();
+  }
 
-	@Override
-	protected void __onCreate() {
-		__systems.initialize();
-	}
+  @Override
+  protected void onCreate() {
+    systems.initialize();
+  }
 
-	@Override
-	protected void __onMessage(EMessage message) {
-	}
+  @Override
+  protected void onMessage(ExtraMessage message) {
+  }
 
-	@Override
-	protected void __onUpdate(float deltaTime) {
-		__systems.execute(deltaTime);
-	}
+  @Override
+  protected void onUpdate(float deltaTime) {
+    systems.execute(deltaTime);
+  }
 
-	@Override
-	protected void __onRender(Paint paint) {
-		__systems.render(paint);
-	}
+  @Override
+  protected void onRender(Paint paint) {
+    systems.render(paint);
+  }
 
-	@Override
-	protected void __onPause() {
-		__systems.paused(true);
-	}
+  @Override
+  protected void onPause() {
+    systems.paused(true);
+  }
 
-	@Override
-	protected void __onResume() {
-		__systems.paused(false);
-	}
+  @Override
+  protected void onResume() {
+    systems.paused(false);
+  }
 
-	@Override
-	protected void __onDispose() {
-		__systems.tearDown();
-	}
+  @Override
+  protected void onDispose() {
+    systems.tearDown();
+  }
 
-	@Override
-	protected void __onAction1() {
-	}
+  @Override
+  protected void onAction1() {
+  }
 
-	@Override
-	protected void __onAction2() {
-	}
+  @Override
+  protected void onAction2() {
+  }
 
-	@Override
-	protected void __onAction3() {
-	}
-
+  @Override
+  protected void onAction3() {
+  }
 }

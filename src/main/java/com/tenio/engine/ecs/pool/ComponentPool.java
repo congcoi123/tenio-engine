@@ -21,112 +21,127 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs.pool;
 
-import java.lang.reflect.InvocationTargetException;
-
-import javax.annotation.concurrent.GuardedBy;
-
 import com.tenio.common.configuration.constant.CommonConstant;
-import com.tenio.common.exceptions.NullElementPoolException;
-import com.tenio.common.loggers.SystemLogger;
-import com.tenio.common.pool.ElementsPool;
-import com.tenio.engine.ecs.bases.Component;
+import com.tenio.common.exception.NullElementPoolException;
+import com.tenio.common.logger.SystemLogger;
+import com.tenio.common.pool.ElementPool;
+import com.tenio.engine.ecs.basis.Component;
+import java.lang.reflect.InvocationTargetException;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * The object pool mechanism for {@link Component}.
  */
-public final class ComponentPool extends SystemLogger implements ElementsPool<Component> {
+public final class ComponentPool extends SystemLogger implements ElementPool<Component> {
 
-	@GuardedBy("this")
-	private Component[] __pool;
-	@GuardedBy("this")
-	private boolean[] __used;
-	private final Class<?> __clazz;
+  private final Class<?> clazz;
+  @GuardedBy("this")
+  private Component[] pool;
+  @GuardedBy("this")
+  private boolean[] used;
 
-	public ComponentPool(Class<?> clazz) {
-		__clazz = clazz;
-		__pool = new Component[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
-		__used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+  /**
+   * Initialization.
+   *
+   * @param clazz the class of element
+   */
+  public ComponentPool(Class<?> clazz) {
+    this.clazz = clazz;
+    pool = new Component[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+    used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
 
-		for (int i = 0; i < __pool.length; i++) {
-			try {
-				var component = (Component) __clazz.getDeclaredConstructor().newInstance();
-				__pool[i] = component;
-				__used[i] = false;
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				error(e);
-			}
-		}
-	}
+    for (int i = 0; i < pool.length; i++) {
+      try {
+        var component = (Component) this.clazz.getDeclaredConstructor().newInstance();
+        pool[i] = component;
+        used[i] = false;
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        error(e);
+      }
+    }
+  }
 
-	@Override
-	public synchronized Component get() {
-		for (int i = 0; i < __used.length; i++) {
-			if (!__used[i]) {
-				__used[i] = true;
-				return __pool[i];
-			}
-		}
-		// If we got here, then all the Elements are in use. We will
-		// increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
-		// illustration purposes).
-		var oldUsed = __used;
-		__used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-		System.arraycopy(oldUsed, 0, __used, 0, oldUsed.length);
+  @Override
+  public synchronized Component get() {
+    for (int i = 0; i < used.length; i++) {
+      if (!used[i]) {
+        used[i] = true;
+        return pool[i];
+      }
+    }
+    // If we got here, then all the Elements are in use. We will
+    // increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
+    // illustration purposes).
+    var oldUsed = used;
+    used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
+    System.arraycopy(oldUsed, 0, used, 0, oldUsed.length);
 
-		var oldPool = __pool;
-		__pool = new Component[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-		System.arraycopy(oldPool, 0, __pool, 0, oldPool.length);
+    var oldPool = pool;
+    pool = new Component[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
+    System.arraycopy(oldPool, 0, pool, 0, oldPool.length);
 
-		for (int i = oldPool.length; i < __pool.length; i++) {
-			try {
-				__pool[i] = (Component) __clazz.getDeclaredConstructor().newInstance();
-				__used[i] = false;
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				error(e);
-			}
-		}
+    for (int i = oldPool.length; i < pool.length; i++) {
+      try {
+        pool[i] = (Component) clazz.getDeclaredConstructor().newInstance();
+        used[i] = false;
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        error(e);
+      }
+    }
 
-		info("COMPONENT POOL", buildgen("Increase the number of elements by ",
-				CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", __used.length));
+    info("COMPONENT POOL", buildgen("Increase the number of elements by ",
+        CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", used.length));
 
-		// and allocate the last old ELement
-		__used[oldPool.length - 1] = true;
-		return __pool[oldPool.length - 1];
-	}
+    // and allocate the last old ELement
+    used[oldPool.length - 1] = true;
+    return pool[oldPool.length - 1];
+  }
 
-	@Override
-	public synchronized void repay(Component element) {
-		boolean flagFound = false;
-		for (int i = 0; i < __pool.length; i++) {
-			if (__pool[i] == element) {
-				__used[i] = false;
-				flagFound = true;
-				break;
-			}
-		}
-		if (!flagFound) {
-			var e = new NullElementPoolException();
-			error(e);
-			throw e;
-		}
-	}
+  @Override
+  public synchronized void repay(Component element) {
+    boolean flagFound = false;
+    for (int i = 0; i < pool.length; i++) {
+      if (pool[i] == element) {
+        used[i] = false;
+        flagFound = true;
+        break;
+      }
+    }
+    if (!flagFound) {
+      var e = new NullElementPoolException(element.toString());
+      error(e);
+      throw e;
+    }
+  }
 
-	@Override
-	public synchronized void cleanup() {
-		for (int i = 0; i < __pool.length; i++) {
-			__pool[i] = null;
-		}
-		__used = null;
-		__pool = null;
-	}
+  @Override
+  public synchronized void cleanup() {
+    for (int i = 0; i < pool.length; i++) {
+      pool[i] = null;
+    }
+    used = null;
+    pool = null;
+  }
 
-	@Override
-	public synchronized int getPoolSize() {
-		return (__pool.length == __used.length) ? __pool.length : -1;
-	}
+  @Override
+  public synchronized int getPoolSize() {
+    return (pool.length == used.length) ? pool.length : -1;
+  }
 
+  @Override
+  public int getAvailableSlot() {
+    int slot = 0;
+    for (int i = 0; i < used.length; i++) {
+      if (!used[i]) {
+        slot++;
+      }
+    }
+
+    return slot;
+  }
 }

@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -29,67 +30,63 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.tenio.common.configuration.constant.CommonConstant;
+import com.tenio.common.exception.NullElementPoolException;
+import com.tenio.common.pool.ElementPool;
+import com.tenio.engine.ecs.basis.Component;
+import com.tenio.engine.ecs.model.component.View;
+import com.tenio.engine.ecs.pool.ComponentPool;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.tenio.common.configuration.constant.CommonConstant;
-import com.tenio.common.exceptions.NullElementPoolException;
-import com.tenio.common.pool.ElementsPool;
-import com.tenio.engine.ecs.bases.Component;
-import com.tenio.engine.ecs.model.component.View;
-import com.tenio.engine.ecs.pool.ComponentPool;
-
-/**
- * @author kong
- */
 public final class ComponentPoolTest {
 
-	private ElementsPool<Component> __componentPool;
+  private ElementPool<Component> componentPool;
 
-	@BeforeEach
-	public void initialize() {
-		__componentPool = new ComponentPool(View.class);
-	}
+  @BeforeEach
+  public void initialize() {
+    componentPool = new ComponentPool(View.class);
+  }
 
-	@AfterEach
-	public void tearDown() {
-		__componentPool.cleanup();
-	}
+  @AfterEach
+  public void tearDown() {
+    componentPool.cleanup();
+  }
 
-	@Test
-	public void createNewComponentShouldReturnSuccess() {
-		View view = (View) __componentPool.get();
+  @Test
+  public void createNewComponentShouldReturnSuccess() {
+    View view = (View) componentPool.get();
 
-		assertNotEquals(null, view);
-	}
+    assertNotEquals(null, view);
+  }
 
-	@Test
-	public void repayAComponentWithoutGetShouldCauseException() {
-		assertThrows(NullElementPoolException.class, () -> {
-			View view = new View();
-			__componentPool.repay(view);
-		});
-	}
+  @Test
+  public void repayAComponentWithoutGetShouldCauseException() {
+    assertThrows(NullElementPoolException.class, () -> {
+      View view = new View();
+      componentPool.repay(view);
+    });
+  }
 
-	@Test
-	public void createNumberOfElementsShouldLessThanPoolSize() {
-		int numberElement = 100;
-		for (int i = 0; i < numberElement; i++) {
-			__componentPool.get();
-		}
-		int expectedPoolSize = 0;
-		if (numberElement <= CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL) {
-			expectedPoolSize = CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL;
-		} else {
-			double p = Math.ceil((double) (numberElement - CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL)
-					/ (double) CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL);
-			expectedPoolSize = (int) (CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL * p);
-		}
-		final int expected = expectedPoolSize;
+  @Test
+  public void createNumberOfElementsShouldLessThanPoolSize() {
+    int numberElement = 100;
+    for (int i = 0; i < numberElement; i++) {
+      componentPool.get();
+    }
+    int expectedPoolSize = 0;
+    if (numberElement <= CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL) {
+      expectedPoolSize = CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL;
+    } else {
+      double p = Math.ceil((double) (numberElement - CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL)
+          / (double) CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL);
+      expectedPoolSize = (int) (CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL +
+          CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL * p);
+    }
+    final int expected = expectedPoolSize;
 
-		assertAll("createNumberOfElements", () -> assertEquals(expected, __componentPool.getPoolSize()),
-				() -> assertTrue(__componentPool.getPoolSize() > numberElement));
-	}
-
+    assertAll("createNumberOfElements", () -> assertEquals(expected, componentPool.getPoolSize()),
+        () -> assertTrue(componentPool.getPoolSize() > numberElement));
+  }
 }

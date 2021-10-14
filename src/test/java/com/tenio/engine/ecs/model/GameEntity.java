@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 package com.tenio.engine.ecs.model;
 
-import com.tenio.engine.ecs.bases.implement.EntityImpl;
+import com.tenio.engine.ecs.basis.implement.EntityImpl;
 import com.tenio.engine.ecs.model.component.Position;
 
 /**

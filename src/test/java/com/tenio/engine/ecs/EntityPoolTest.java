@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -29,71 +30,67 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.tenio.common.configuration.constant.CommonConstant;
+import com.tenio.common.exception.NullElementPoolException;
+import com.tenio.common.pool.ElementPool;
+import com.tenio.engine.ecs.basis.Entity;
+import com.tenio.engine.ecs.basis.implement.ContextInfo;
+import com.tenio.engine.ecs.model.GameComponents;
+import com.tenio.engine.ecs.model.GameEntity;
+import com.tenio.engine.ecs.pool.EntityPool;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.tenio.common.configuration.constant.CommonConstant;
-import com.tenio.common.exceptions.NullElementPoolException;
-import com.tenio.common.pool.ElementsPool;
-import com.tenio.engine.ecs.bases.Entity;
-import com.tenio.engine.ecs.bases.implement.ContextInfo;
-import com.tenio.engine.ecs.model.GameComponents;
-import com.tenio.engine.ecs.model.GameEntity;
-import com.tenio.engine.ecs.pool.EntityPool;
-
-/**
- * @author kong
- */
 public final class EntityPoolTest {
 
-	private ElementsPool<Entity> __entityPool;
+  private ElementPool<Entity> entityPool;
 
-	@BeforeEach
-	public void initialize() {
-		ContextInfo info = new ContextInfo("Game", GameComponents.getComponentNames(),
-				GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
-		__entityPool = new EntityPool(GameEntity.class, info);
-	}
+  @BeforeEach
+  public void initialize() {
+    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
+        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    entityPool = new EntityPool(GameEntity.class, info);
+  }
 
-	@AfterEach
-	public void tearDown() {
-		__entityPool.cleanup();
-	}
+  @AfterEach
+  public void tearDown() {
+    entityPool.cleanup();
+  }
 
-	@Test
-	public void createNewEntityShouldReturnSuccess() {
-		Entity entity = __entityPool.get();
+  @Test
+  public void createNewEntityShouldReturnSuccess() {
+    var entity = entityPool.get();
 
-		assertNotEquals(null, entity);
-	}
+    assertNotEquals(null, entity);
+  }
 
-	@Test
-	public void repayAnEntityWithoutGetShouldCauseException() {
-		assertThrows(NullElementPoolException.class, () -> {
-			Entity entity = new GameEntity();
-			__entityPool.repay(entity);
-		});
-	}
+  @Test
+  public void repayAnEntityWithoutGetShouldCauseException() {
+    assertThrows(NullElementPoolException.class, () -> {
+      var entity = new GameEntity();
+      entityPool.repay(entity);
+    });
+  }
 
-	@Test
-	public void createNumberOfElementsShouldLessThanPoolSize() {
-		int numberElement = 100;
-		for (int i = 0; i < numberElement; i++) {
-			__entityPool.get();
-		}
-		int expectedPoolSize = 0;
-		if (numberElement <= CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL) {
-			expectedPoolSize = CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL;
-		} else {
-			double p = Math.ceil((double) (numberElement - CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL)
-					/ (double) CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL);
-			expectedPoolSize = (int) (CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL * p);
-		}
-		final int expected = expectedPoolSize;
+  @Test
+  public void createNumberOfElementsShouldLessThanPoolSize() {
+    int numberElement = 100;
+    for (int i = 0; i < numberElement; i++) {
+      entityPool.get();
+    }
+    int expectedPoolSize = 0;
+    if (numberElement <= CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL) {
+      expectedPoolSize = CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL;
+    } else {
+      double p = Math.ceil((double) (numberElement - CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL)
+          / (double) CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL);
+      expectedPoolSize = (int) (CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL +
+          CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL * p);
+    }
+    final int expected = expectedPoolSize;
 
-		assertAll("createNumberOfElements", () -> assertEquals(expected, __entityPool.getPoolSize()),
-				() -> assertTrue(__entityPool.getPoolSize() > numberElement));
-	}
-
+    assertAll("createNumberOfElements", () -> assertEquals(expected, entityPool.getPoolSize()),
+        () -> assertTrue(entityPool.getPoolSize() > numberElement));
+  }
 }

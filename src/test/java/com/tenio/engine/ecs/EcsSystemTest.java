@@ -21,76 +21,71 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.tenio.engine.ecs.basis.implement.ContextInfo;
+import com.tenio.engine.ecs.model.GameComponents;
+import com.tenio.engine.ecs.model.GameContext;
+import com.tenio.engine.ecs.model.system.TestSystem;
+import com.tenio.engine.ecs.system.implement.Systems;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.tenio.engine.ecs.bases.implement.ContextInfo;
-import com.tenio.engine.ecs.model.GameComponents;
-import com.tenio.engine.ecs.model.GameContext;
-import com.tenio.engine.ecs.model.system.TestSystem;
-import com.tenio.engine.ecs.systems.implement.Systems;
-
-/**
- * @author kong
- */
 public final class EcsSystemTest {
 
-	private Systems __systems;
-	private TestSystem __testSystem;
+  private Systems systems;
+  private TestSystem testSystem;
 
-	@BeforeEach
-	public void initialize() {
-		__systems = new Systems();
+  @BeforeEach
+  public void initialize() {
+    systems = new Systems();
 
-		ContextInfo info = new ContextInfo("Game", GameComponents.getComponentNames(),
-				GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
-		GameContext context = new GameContext(info);
+    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
+        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    var context = new GameContext(info);
 
-		__testSystem = new TestSystem(context);
+    testSystem = new TestSystem(context);
 
-		__systems.add(__testSystem);
-	}
+    systems.add(testSystem);
+  }
 
-	@AfterEach
-	public void tearDown() {
-		__systems.clearSystems();
-	}
+  @AfterEach
+  public void tearDown() {
+    systems.clearSystems();
+  }
 
-	@Test
-	public void allTestSytemMethodsShouldBeRun() {
-		__systems.initialize();
-		__systems.execute(1);
-		__systems.render(null);
-		__systems.tearDown();
+  @Test
+  public void allTestSytemMethodsShouldBeRun() {
+    systems.initialize();
+    systems.execute(1);
+    systems.render(null);
+    systems.tearDown();
 
-		assertAll("runTestSystemMethods", () -> assertTrue(__testSystem.isInitialized()),
-				() -> assertTrue(__testSystem.isExecuted()),
-				() -> assertTrue(__testSystem.isRendered()),
-				() -> assertTrue(__testSystem.isTearDown()));
-	}
+    assertAll("runTestSystemMethods", () -> assertTrue(testSystem.isInitialized()),
+        () -> assertTrue(testSystem.isExecuted()),
+        () -> assertTrue(testSystem.isRendered()),
+        () -> assertTrue(testSystem.isTearDown()));
+  }
 
-	@Test
-	public void pauseSystemShouldReturnTrueValue() {
-		__systems.initialize();
+  @Test
+  public void pauseSystemShouldReturnTrueValue() {
+    systems.initialize();
 
-		__systems.paused(true);
+    systems.paused(true);
 
-		__systems.execute(1);
-		__systems.render(null);
-		__systems.tearDown();
+    systems.execute(1);
+    systems.render(null);
+    systems.tearDown();
 
-		assertAll("pauseSystem", () -> assertTrue(__testSystem.isInitialized()),
-				() -> assertFalse(__testSystem.isExecuted()),
-				() -> assertFalse(__testSystem.isRendered()),
-				() -> assertTrue(__testSystem.isTearDown()));
-
-	}
-
+    assertAll("pauseSystem", () -> assertTrue(testSystem.isInitialized()),
+        () -> assertFalse(testSystem.isExecuted()),
+        () -> assertFalse(testSystem.isRendered()),
+        () -> assertTrue(testSystem.isTearDown()));
+  }
 }

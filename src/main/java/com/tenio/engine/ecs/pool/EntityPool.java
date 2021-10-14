@@ -21,123 +21,139 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs.pool;
 
+import com.tenio.common.configuration.constant.CommonConstant;
+import com.tenio.common.exception.NullElementPoolException;
+import com.tenio.common.logger.SystemLogger;
+import com.tenio.common.pool.ElementPool;
+import com.tenio.engine.ecs.basis.Entity;
+import com.tenio.engine.ecs.basis.implement.ContextInfo;
+import com.tenio.engine.ecs.basis.implement.EntityImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
-
 import javax.annotation.concurrent.GuardedBy;
-
-import com.tenio.common.configuration.constant.CommonConstant;
-import com.tenio.common.exceptions.NullElementPoolException;
-import com.tenio.common.loggers.SystemLogger;
-import com.tenio.common.pool.ElementsPool;
-import com.tenio.engine.ecs.bases.Entity;
-import com.tenio.engine.ecs.bases.implement.ContextInfo;
-import com.tenio.engine.ecs.bases.implement.EntityImpl;
 
 /**
  * The object pool mechanism for {@link Entity}.
  */
-public final class EntityPool extends SystemLogger implements ElementsPool<Entity> {
+public final class EntityPool extends SystemLogger implements ElementPool<Entity> {
 
-	@GuardedBy("this")
-	private Entity[] __pool;
-	@GuardedBy("this")
-	private boolean[] __used;
-	private final Class<? extends EntityImpl> __clazz;
-	private final ContextInfo __contextInfo;
+  private final Class<? extends EntityImpl> clazz;
+  private final ContextInfo contextInfo;
+  @GuardedBy("this")
+  private Entity[] pool;
+  @GuardedBy("this")
+  private boolean[] used;
 
-	public EntityPool(Class<? extends EntityImpl> clazz, ContextInfo contextInfo) {
-		__clazz = clazz;
-		__contextInfo = contextInfo;
-		__pool = new Entity[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
-		__used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+  /**
+   * Initialization.
+   *
+   * @param clazz       the class of element
+   * @param contextInfo the context information
+   */
+  public EntityPool(Class<? extends EntityImpl> clazz, ContextInfo contextInfo) {
+    this.clazz = clazz;
+    this.contextInfo = contextInfo;
+    pool = new Entity[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+    used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
 
-		for (int i = 0; i < __pool.length; i++) {
-			try {
-				var entity = __clazz.getDeclaredConstructor().newInstance();
-				entity.setId(UUID.randomUUID().toString());
-				entity.setContextInfo(__contextInfo);
-				__pool[i] = entity;
-				__used[i] = false;
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				error(e);
-			}
-		}
-	}
+    for (int i = 0; i < pool.length; i++) {
+      try {
+        var entity = this.clazz.getDeclaredConstructor().newInstance();
+        entity.setId(UUID.randomUUID().toString());
+        entity.setContextInfo(this.contextInfo);
+        pool[i] = entity;
+        used[i] = false;
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        error(e);
+      }
+    }
+  }
 
-	@Override
-	public synchronized Entity get() {
-		for (int i = 0; i < __used.length; i++) {
-			if (!__used[i]) {
-				__used[i] = true;
-				return __pool[i];
-			}
-		}
-		// If we got here, then all the Elements are in use. We will
-		// increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
-		// illustration purposes).
-		var oldUsed = __used;
-		__used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-		System.arraycopy(oldUsed, 0, __used, 0, oldUsed.length);
+  @Override
+  public synchronized Entity get() {
+    for (int i = 0; i < used.length; i++) {
+      if (!used[i]) {
+        used[i] = true;
+        return pool[i];
+      }
+    }
+    // If we got here, then all the Elements are in use. We will
+    // increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
+    // illustration purposes).
+    var oldUsed = used;
+    used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
+    System.arraycopy(oldUsed, 0, used, 0, oldUsed.length);
 
-		var oldPool = __pool;
-		__pool = new Entity[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-		System.arraycopy(oldPool, 0, __pool, 0, oldPool.length);
+    var oldPool = pool;
+    pool = new Entity[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
+    System.arraycopy(oldPool, 0, pool, 0, oldPool.length);
 
-		for (int i = oldPool.length; i < __pool.length; i++) {
-			try {
-				var entity = __clazz.getDeclaredConstructor().newInstance();
-				entity.setId(UUID.randomUUID().toString());
-				entity.setContextInfo(__contextInfo);
-				__pool[i] = entity;
-				__used[i] = false;
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				error(e);
-			}
-		}
+    for (int i = oldPool.length; i < pool.length; i++) {
+      try {
+        var entity = clazz.getDeclaredConstructor().newInstance();
+        entity.setId(UUID.randomUUID().toString());
+        entity.setContextInfo(contextInfo);
+        pool[i] = entity;
+        used[i] = false;
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        error(e);
+      }
+    }
 
-		info("COMPONENT POOL", buildgen("Increase the number of elements by ",
-				CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", __used.length));
+    info("COMPONENT POOL", buildgen("Increase the number of elements by ",
+        CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", used.length));
 
-		// and allocate the last old ELement
-		__used[oldPool.length - 1] = true;
-		return __pool[oldPool.length - 1];
-	}
+    // and allocate the last old ELement
+    used[oldPool.length - 1] = true;
+    return pool[oldPool.length - 1];
+  }
 
-	@Override
-	public synchronized void repay(Entity element) {
-		boolean flagFound = false;
-		for (int i = 0; i < __pool.length; i++) {
-			if (__pool[i] == element) {
-				__used[i] = false;
-				element.reset();
-				flagFound = true;
-				break;
-			}
-		}
-		if (!flagFound) {
-			var e = new NullElementPoolException();
-			error(e);
-			throw e;
-		}
-	}
+  @Override
+  public synchronized void repay(Entity element) {
+    boolean flagFound = false;
+    for (int i = 0; i < pool.length; i++) {
+      if (pool[i] == element) {
+        used[i] = false;
+        element.reset();
+        flagFound = true;
+        break;
+      }
+    }
+    if (!flagFound) {
+      var e = new NullElementPoolException(element.toString());
+      error(e);
+      throw e;
+    }
+  }
 
-	@Override
-	public synchronized void cleanup() {
-		for (int i = 0; i < __pool.length; i++) {
-			__pool[i] = null;
-		}
-		__used = null;
-		__pool = null;
-	}
+  @Override
+  public synchronized void cleanup() {
+    for (int i = 0; i < pool.length; i++) {
+      pool[i] = null;
+    }
+    used = null;
+    pool = null;
+  }
 
-	@Override
-	public synchronized int getPoolSize() {
-		return (__pool.length == __used.length) ? __pool.length : -1;
-	}
+  @Override
+  public synchronized int getPoolSize() {
+    return (pool.length == used.length) ? pool.length : -1;
+  }
 
+  @Override
+  public int getAvailableSlot() {
+    int slot = 0;
+    for (int i = 0; i < used.length; i++) {
+      if (!used[i]) {
+        slot++;
+      }
+    }
+
+    return slot;
+  }
 }

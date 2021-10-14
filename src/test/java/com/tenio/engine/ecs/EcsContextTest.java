@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.ecs;
 
 import static org.junit.Assert.assertFalse;
@@ -29,104 +30,103 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.tenio.engine.ecs.bases.implement.ContextInfo;
+import com.tenio.engine.ecs.basis.implement.ContextInfo;
 import com.tenio.engine.ecs.model.GameComponents;
 import com.tenio.engine.ecs.model.GameContext;
 import com.tenio.engine.ecs.model.GameEntity;
 import com.tenio.engine.ecs.model.component.Position;
-import com.tenio.engine.exceptions.DuplicatedComponentException;
+import com.tenio.engine.exception.DuplicatedComponentException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author kong
- */
 public final class EcsContextTest {
 
-	private GameContext __context;
-	private GameEntity __entity;
+  private GameContext gameContext;
+  private GameEntity gameEntity;
 
-	@BeforeEach
-	public void initialize() {
-		ContextInfo info = new ContextInfo("Game", GameComponents.getComponentNames(),
-				GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
-		__context = new GameContext(info);
+  @BeforeEach
+  public void initialize() {
+    var info = new ContextInfo("Game", GameComponents.getComponentNames(),
+        GameComponents.getComponentTypes(), GameComponents.getNumberComponents());
+    gameContext = new GameContext(info);
 
-		__entity = __context.createEntity();
-		__entity.setAnimation(true);
-		__entity.setMotion(true);
-		__entity.setView(false);
-		__entity.setPosition(0, 0);
-	}
+    gameEntity = gameContext.createEntity();
+    gameEntity.setAnimation(true);
+    gameEntity.setMotion(true);
+    gameEntity.setView(false);
+    gameEntity.setPosition(0, 0);
+  }
 
-	@AfterEach
-	public void tearDown() {
-		__context.reset();
-	}
+  @AfterEach
+  public void tearDown() {
+    gameContext.reset();
+  }
 
-	@Test
-	public void findEntityShouldReturnTrue() {
-		assertTrue(__context.hasEntity(__entity));
-	}
+  @Test
+  public void findEntityShouldReturnTrue() {
+    assertTrue(gameContext.hasEntity(gameEntity));
+  }
 
-	@Test
-	public void removeEntityShouldReturnSuccess() {
-		__context.destroyEntity(__entity);
-		
-		assertFalse(__context.hasEntity(__entity));
-	}
+  @Test
+  public void removeEntityShouldReturnSuccess() {
+    gameContext.destroyEntity(gameEntity);
 
-	@Test
-	public void countEntitesShouldMatchValue() {
-		assertAll("countEntities", () -> assertEquals(1, __context.getEntitesCount()),
-				() -> assertEquals(1, __context.getEntities().size()));
-	}
+    assertFalse(gameContext.hasEntity(gameEntity));
+  }
 
-	@Test
-	public void reAddEntityPositionShouldCauseException() {
-		assertThrows(DuplicatedComponentException.class, () -> {
-			Position position = new Position();
-			position.x = 10;
-			position.y = 10;
+  @Test
+  public void countEntitiesShouldMatchValue() {
+    assertAll("countEntities", () -> assertEquals(1, gameContext.getEntitiesCount()),
+        () -> assertEquals(1, gameContext.getEntities().size()));
+  }
 
-			__entity.setPosition(position.x, position.y);
-		});
-	}
+  @Test
+  public void reAddEntityPositionShouldCauseException() {
+    assertThrows(DuplicatedComponentException.class, () -> {
+      Position position = new Position();
+      position.x = 10;
+      position.y = 10;
 
-	@Test
-	public void changeEntityPositionShouldMatchValue() {
-		Position position = new Position();
-		position.x = 10;
-		position.y = 10;
+      gameEntity.setPosition(position.x, position.y);
+    });
+  }
 
-		((Position) __entity.getComponent(GameComponents.POSITION)).x = position.x;
-		((Position) __entity.getComponent(GameComponents.POSITION)).y = position.y;
+  @Test
+  public void changeEntityPositionShouldMatchValue() {
+    Position position = new Position();
+    position.x = 10;
+    position.y = 10;
 
-		assertAll("replacePosition",
-				() -> assertEquals(position.x, ((Position) __entity.getComponent(GameComponents.POSITION)).x),
-				() -> assertEquals(position.y, ((Position) __entity.getComponent(GameComponents.POSITION)).y));
-	}
+    ((Position) gameEntity.getComponent(GameComponents.POSITION)).x = position.x;
+    ((Position) gameEntity.getComponent(GameComponents.POSITION)).y = position.y;
 
-	@Test
-	public void replaceEntityPositionShouldMatchValue() {
-		Position position = new Position();
-		position.x = 10;
-		position.y = 10;
+    assertAll("replacePosition",
+        () -> assertEquals(position.x,
+            ((Position) gameEntity.getComponent(GameComponents.POSITION)).x),
+        () -> assertEquals(position.y,
+            ((Position) gameEntity.getComponent(GameComponents.POSITION)).y));
+  }
 
-		__entity.replacePosition(position.x, position.y);
+  @Test
+  public void replaceEntityPositionShouldMatchValue() {
+    Position position = new Position();
+    position.x = 10;
+    position.y = 10;
 
-		assertAll("replacePosition",
-				() -> assertEquals(position.x, ((Position) __entity.getComponent(GameComponents.POSITION)).x),
-				() -> assertEquals(position.y, ((Position) __entity.getComponent(GameComponents.POSITION)).y));
-	}
+    gameEntity.replacePosition(position.x, position.y);
 
-	@Test
-	public void removeAllEntitiesShouldReturnSucess() {
-		__context.destroyAllEntities();
-		
-		assertEquals(0, __context.getEntitesCount());
-	}
+    assertAll("replacePosition",
+        () -> assertEquals(position.x,
+            ((Position) gameEntity.getComponent(GameComponents.POSITION)).x),
+        () -> assertEquals(position.y,
+            ((Position) gameEntity.getComponent(GameComponents.POSITION)).y));
+  }
 
+  @Test
+  public void removeAllEntitiesShouldReturnSucess() {
+    gameContext.destroyAllEntities();
+
+    assertEquals(0, gameContext.getEntitiesCount());
+  }
 }

@@ -21,82 +21,81 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.fsm;
 
+import com.tenio.common.logger.SystemLogger;
+import com.tenio.engine.exception.DuplicatedEntityException;
+import com.tenio.engine.fsm.entity.AbstractEntity;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tenio.common.loggers.SystemLogger;
-import com.tenio.engine.exceptions.DuplicatedEntityException;
-import com.tenio.engine.fsm.entity.AbstractEntity;
 
 /**
  * This class for managing entities.
  */
 public final class EntityManager extends SystemLogger {
 
-	/**
-	 * The list of entities
-	 */
-	private final Map<String, AbstractEntity> __entities = new HashMap<String, AbstractEntity>();
+  /**
+   * The list of entities.
+   */
+  private final Map<String, AbstractEntity> entities = new HashMap<String, AbstractEntity>();
 
-	/**
-	 * Register an entity to this management
-	 * 
-	 * @param entity the desired entity, see {@link AbstractEntity}
-	 */
-	public void register(AbstractEntity entity) {
-		try {
-			if (contain(entity.getId())) {
-				throw new DuplicatedEntityException();
-			}
-		} catch (DuplicatedEntityException e) {
-			// fire an event
-			error(e, "entity id: ", entity.getId());
-			return;
-		}
+  /**
+   * Register an entity to this management.
+   *
+   * @param entity the desired entity, see {@link AbstractEntity}
+   */
+  public void register(AbstractEntity entity) {
+    try {
+      if (contain(entity.getId())) {
+        throw new DuplicatedEntityException();
+      }
+    } catch (DuplicatedEntityException e) {
+      // fire an event
+      error(e, "entity id: ", entity.getId());
+      return;
+    }
 
-		__entities.put(entity.getId(), entity);
-	}
+    entities.put(entity.getId(), entity);
+  }
 
-	public boolean contain(String id) {
-		return __entities.containsKey(id);
-	}
+  public boolean contain(String id) {
+    return entities.containsKey(id);
+  }
 
-	public long count() {
-		return __entities.size();
-	}
+  public long count() {
+    return entities.size();
+  }
 
-	public AbstractEntity get(String id) {
-		return __entities.get(id);
-	}
+  public AbstractEntity get(String id) {
+    return entities.get(id);
+  }
 
-	/**
-	 * Need to call update every frame
-	 * 
-	 * @param deltaTime the time between two consecutive frames
-	 */
-	public void update(float deltaTime) {
-		for (var entity : __entities.values()) {
-			entity.update(deltaTime);
-		}
-	}
+  /**
+   * Need to call update every frame.
+   *
+   * @param deltaTime the time between two consecutive frames
+   */
+  public void update(float deltaTime) {
+    for (var entity : entities.values()) {
+      entity.update(deltaTime);
+    }
+  }
 
-	/**
-	 * Retrieves the list of entities
-	 * 
-	 * @return the list of entities in this manager
-	 */
-	public Map<String, AbstractEntity> gets() {
-		return __entities;
-	}
+  /**
+   * Retrieves the list of entities.
+   *
+   * @return the list of entities in this manager
+   */
+  public Map<String, AbstractEntity> gets() {
+    return entities;
+  }
 
-	public void remove(String id) {
-		__entities.remove(id);
-	}
+  public void remove(String id) {
+    entities.remove(id);
+  }
 
-	public void clear() {
-		__entities.clear();
-	}
-
+  public void clear() {
+    entities.clear();
+  }
 }

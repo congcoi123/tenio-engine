@@ -21,22 +21,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.fsm;
 
 import com.tenio.engine.fsm.entity.Telegram;
 
 /**
- * This interface provides a method for listening all messages of entities
+ * This interface provides a method for listening all messages of entities.
  */
 public interface MessageListener {
 
-	/**
-	 * To listen message communication
-	 * 
-	 * @param msg         see {@link Telegram}
-	 * @param flagHandled set <b>true</b> if you want the message can be handled,
-	 *                    <b>false</b> otherwise
-	 */
-	void onListen(final Telegram msg, boolean flagHandled);
-
+  /**
+   * To listen message communication.
+   *
+   * @param msg         see {@link Telegram}
+   * @param flagHandled set <b>true</b> if you want the message can be handled,
+   *                    <b>false</b> otherwise
+   */
+  void onListen(final Telegram msg, boolean flagHandled);
 }

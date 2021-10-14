@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.fsm.entity;
 
 import com.tenio.engine.fsm.MessageDispatcher;
@@ -28,42 +29,40 @@ import com.tenio.engine.fsm.MessageDispatcher;
 /**
  * Check out the <a href=
  * "https://en.wikipedia.org/wiki/Finite-state_machine#State/Event_table">State</a>
- * for more details
- * 
+ * for more details.
+ *
  * @param <T> the entity template
  */
 public abstract class State<T> {
 
-	/**
-	 * This will execute when the state is entered
-	 * 
-	 * @param entity the current entity
-	 */
-	public abstract void enter(T entity);
+  /**
+   * This will execute when the state is entered.
+   *
+   * @param entity the current entity
+   */
+  public abstract void enter(T entity);
 
-	/**
-	 * This is the state's normal update function
-	 * 
-	 * @param entity the current entity
-	 */
-	public abstract void execute(T entity);
+  /**
+   * This is the state's normal update function.
+   *
+   * @param entity the current entity
+   */
+  public abstract void execute(T entity);
 
-	/**
-	 * This will execute when the state is exited
-	 * 
-	 * @param entity the current entity
-	 */
-	public abstract void exit(T entity);
+  /**
+   * This will execute when the state is exited.
+   *
+   * @param entity the current entity
+   */
+  public abstract void exit(T entity);
 
-	/**
-	 * This executes if the agent receives a message from the message dispatcher,
-	 * see {@link MessageDispatcher}
-	 * 
-	 * @param entity the current entity
-	 * @param msg    the message that sent to this current entity
-	 * @return <b>true</b> if the message was sent successful, <b>false</b>
-	 *         otherwise
-	 */
-	public abstract boolean onMessage(T entity, Telegram msg);
-
+  /**
+   * This executes if the agent receives a message from the message dispatcher,
+   * see {@link MessageDispatcher}.
+   *
+   * @param entity the current entity
+   * @param msg    the message that sent to this current entity
+   * @return <b>true</b> if the message was sent successful, <b>false</b> otherwise
+   */
+  public abstract boolean onMessage(T entity, Telegram msg);
 }

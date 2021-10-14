@@ -23,8 +23,8 @@ THE SOFTWARE.
 */
 package com.tenio.engine.ecs.model;
 
-import com.tenio.engine.ecs.bases.implement.ContextImpl;
-import com.tenio.engine.ecs.bases.implement.ContextInfo;
+import com.tenio.engine.ecs.basis.implement.ContextImpl;
+import com.tenio.engine.ecs.basis.implement.ContextInfo;
 
 /**
  * @author kong

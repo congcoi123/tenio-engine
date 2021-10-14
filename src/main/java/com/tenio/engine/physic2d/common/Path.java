@@ -21,161 +21,170 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.physic2d.common;
 
+import com.tenio.common.utility.MathUtility;
+import com.tenio.engine.physic2d.graphic.Paint;
+import com.tenio.engine.physic2d.graphic.Renderable;
+import com.tenio.engine.physic2d.math.Vector2;
+import com.tenio.engine.physic2d.utility.Transformation;
 import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.tenio.common.utilities.MathUtility;
-import com.tenio.engine.physic2d.graphic.Renderable;
-import com.tenio.engine.physic2d.graphic.Paint;
-import com.tenio.engine.physic2d.math.Vector2;
-import com.tenio.engine.physic2d.utilities.Transformation;
-
 /**
  * This class is used to define, manage, and traverse a path (defined by a
- * series of 2D vectors)
+ * series of 2D vectors).
  */
 public final class Path implements Renderable {
 
-	/**
-	 * The list of way points
-	 */
-	private List<Vector2> __wayPoints;
-	// points to the current way-points
-	private ListIterator<Vector2> __currWayPoints;
-	private Vector2 __currWayPoint;
-	/**
-	 * This flag is used to indicate if the path should be looped (the last
-	 * way-points connected to the first)
-	 */
-	private boolean __looped;
+  /**
+   * The list of way points.
+   */
+  private List<Vector2> wayPoints;
+  // points to the current way-points
+  private ListIterator<Vector2> currWayPoints;
+  private Vector2 currWayPoint;
+  /**
+   * This flag is used to indicate if the path should be looped (the last
+   * way-points connected to the first).
+   */
+  private boolean looped;
 
-	public Path() {
-		__wayPoints = new LinkedList<Vector2>();
-		__looped = false;
-	}
+  public Path() {
+    wayPoints = new LinkedList<Vector2>();
+    looped = false;
+  }
 
-	// This constructor for creating a path with initial random way-points
-	public Path(int numWaypoints, float minX, float minY, float maxX, float maxY, boolean looped) {
-		this();
-		__looped = looped;
-		createRandomPath(numWaypoints, minX, minY, maxX, maxY);
-	}
+  /**
+   * This constructor for creating a path with initial random way-points.
+   *
+   * @param numWaypoints the number of waypoints
+   * @param minX         min x
+   * @param minY         min y
+   * @param maxX         max x
+   * @param maxY         max y
+   * @param looped       is accepted loop or not?
+   */
+  public Path(int numWaypoints, float minX, float minY, float maxX, float maxY, boolean looped) {
+    this();
+    this.looped = looped;
+    createRandomPath(numWaypoints, minX, minY, maxX, maxY);
+  }
 
-	/**
-	 * @return the current way-point, see {@link Vector2}
-	 */
-	public Vector2 getCurrentWayPoint() {
-		return __currWayPoint;
-	}
+  public Vector2 getCurrentWayPoint() {
+    return currWayPoint;
+  }
 
-	/**
-	 * @return <b>true</b> if the end of the list has been reached, <b>false</b>
-	 *         otherwise
-	 */
-	public boolean isEndOfWayPoints() {
-		return !(__currWayPoints.hasNext());
-	}
+  public boolean isEndOfWayPoints() {
+    return !(currWayPoints.hasNext());
+  }
 
-	/**
-	 * Moves the iterator on to the next way-point in the list
-	 */
-	public void setToNextWayPoint() {
-		if (__wayPoints.isEmpty()) {
-			return;
-		}
+  /**
+   * Moves the iterator on to the next way-point in the list.
+   */
+  public void setToNextWayPoint() {
+    if (wayPoints.isEmpty()) {
+      return;
+    }
 
-		if (!__currWayPoints.hasNext()) {
-			if (__looped) {
-				__currWayPoints = __wayPoints.listIterator();
-			}
-		}
-		if (__currWayPoints.hasNext()) {
-			__currWayPoint = __currWayPoints.next();
-		}
-	}
+    if (!currWayPoints.hasNext()) {
+      if (looped) {
+        currWayPoints = wayPoints.listIterator();
+      }
+    }
+    if (currWayPoints.hasNext()) {
+      currWayPoint = currWayPoints.next();
+    }
+  }
 
-	// Creates a random path which is bound by rectangle described by the <b>min or
-	// max</b> values
-	public List<Vector2> createRandomPath(int numWaypoints, float minX, float minY, float maxX, float maxY) {
-		__wayPoints.clear();
+  /**
+   * Create a new random path.
+   *
+   * @param numWaypoints the number of waypoints
+   * @param minX         min x
+   * @param minY         min y
+   * @param maxX         max x
+   * @param maxY         max y
+   * @return a list of vector2
+   */
+  public List<Vector2> createRandomPath(int numWaypoints, float minX, float minY, float maxX,
+                                        float maxY) {
+    wayPoints.clear();
 
-		float midX = (maxX + minX) / 2;
-		float midY = (maxY + minY) / 2;
+    float midX = (maxX + minX) / 2;
+    float midY = (maxY + minY) / 2;
 
-		float smaller = MathUtility.minOf(midX, midY);
+    float smaller = MathUtility.minOf(midX, midY);
 
-		float spacing = MathUtility.TWO_PI / numWaypoints;
+    float spacing = MathUtility.TWO_PI / numWaypoints;
 
-		for (int i = 0; i < numWaypoints; ++i) {
-			float radialDist = MathUtility.randInRange(smaller * 0.2f, smaller);
+    for (int i = 0; i < numWaypoints; ++i) {
+      float radialDist = MathUtility.randInRange(smaller * 0.2f, smaller);
 
-			var temp = Transformation.vec2DRotateAroundOrigin(radialDist, 0, i * spacing);
+      var temp = Transformation.vec2DRotateAroundOrigin(radialDist, 0, i * spacing);
 
-			temp.x += midX;
-			temp.y += midY;
+      temp.x += midX;
+      temp.y += midY;
 
-			__wayPoints.add(temp);
+      wayPoints.add(temp);
+    }
 
-		}
+    currWayPoints = wayPoints.listIterator();
+    if (currWayPoints.hasNext()) {
+      currWayPoint = currWayPoints.next();
+    }
 
-		__currWayPoints = __wayPoints.listIterator();
-		if (__currWayPoints.hasNext()) {
-			__currWayPoint = __currWayPoints.next();
-		}
+    return wayPoints;
+  }
 
-		return __wayPoints;
-	}
+  public void enableLoop(boolean enabled) {
+    looped = enabled;
+  }
 
-	public void enableLoop(boolean enabled) {
-		__looped = enabled;
-	}
+  public void setPath(Path path) {
+    setWayPoints(path.getWayPoints());
+  }
 
-	/**
-	 * Adds a way-point to the end of the path methods for setting the path with
-	 * either another path or a list of vectors
-	 * 
-	 * @param wayPoints list of way-points
-	 */
-	public void setWayPoints(List<Vector2> wayPoints) {
-		__wayPoints = wayPoints;
-		__currWayPoints = __wayPoints.listIterator();
-		__currWayPoint = __currWayPoints.next();
-	}
+  public void clear() {
+    wayPoints.clear();
+  }
 
-	public void setPath(Path path) {
-		setWayPoints(path.getWayPoints());
-	}
+  public List<Vector2> getWayPoints() {
+    return wayPoints;
+  }
 
-	public void clear() {
-		__wayPoints.clear();
-	}
+  /**
+   * Adds a way-point to the end of the path methods for setting the path with
+   * either another path or a list of vectors.
+   *
+   * @param wayPoints list of way-points
+   */
+  public void setWayPoints(List<Vector2> wayPoints) {
+    this.wayPoints = wayPoints;
+    currWayPoints = this.wayPoints.listIterator();
+    currWayPoint = currWayPoints.next();
+  }
 
-	public List<Vector2> getWayPoints() {
-		return __wayPoints;
-	}
+  @Override
+  public void render(Paint paint) {
+    paint.setPenColor(Color.ORANGE);
 
-	@Override
-	public void render(Paint paint) {
-		paint.setPenColor(Color.ORANGE);
+    var it = wayPoints.listIterator();
 
-		var it = __wayPoints.listIterator();
+    var wp = it.next();
 
-		var wp = it.next();
+    while (it.hasNext()) {
+      var n = it.next();
+      paint.drawLine(wp, n);
 
-		while (it.hasNext()) {
-			var n = it.next();
-			paint.drawLine(wp, n);
+      wp = n;
+    }
 
-			wp = n;
-		}
-
-		if (__looped) {
-			paint.drawLine(wp, __wayPoints.get(0));
-		}
-	}
-
+    if (looped) {
+      paint.drawLine(wp, wayPoints.get(0));
+    }
+  }
 }

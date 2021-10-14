@@ -21,22 +21,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.heartbeat;
 
+import com.tenio.common.bootstrap.annotation.Component;
+import com.tenio.common.logger.SystemLogger;
+import com.tenio.engine.exception.HeartbeatNotFoundException;
+import com.tenio.engine.message.ExtraMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
-
-import com.tenio.common.bootstrap.annotations.Component;
-import com.tenio.common.loggers.SystemLogger;
-import com.tenio.engine.exceptions.HeartbeatNotFoundException;
-import com.tenio.engine.message.EMessage;
 
 /**
  * The Java ExecutorService is a construct that allows you to pass a task to be
@@ -44,105 +43,104 @@ import com.tenio.engine.message.EMessage;
  * maintains a reusable pool of threads for executing submitted tasks. This
  * class helps you create and manage your HeartBeats. See:
  * {@link AbstractHeartBeat}
- * 
+ *
  * @see HeartBeatManager
  */
 @ThreadSafe
 @Component
 public final class HeartBeatManagerImpl extends SystemLogger implements HeartBeatManager {
 
-	@GuardedBy("this")
-	private final Map<String, Future<Void>> __threadsManager;
-	/**
-	 * A Set is used as the container for the delayed messages because of the
-	 * benefit of automatic sorting and avoidance of duplicates. Messages are sorted
-	 * by their dispatch time. @see {@link HMessage}
-	 */
-	@GuardedBy("this")
-	private final Map<String, TreeSet<HMessage>> __messagesManager;
-	private ExecutorService __executorService;
+  @GuardedBy("this")
+  private final Map<String, Future<Void>> threadsManager;
+  /**
+   * A Set is used as the container for the delayed messages because of the
+   * benefit of automatic sorting and avoidance of duplicates. Messages are sorted
+   * by their dispatch time. @see {@link HeartbeatMessage}
+   */
+  @GuardedBy("this")
+  private final Map<String, TreeSet<HeartbeatMessage>> messagesManager;
+  private ExecutorService executorService;
 
-	public HeartBeatManagerImpl() {
-		__threadsManager = new HashMap<String, Future<Void>>();
-		__messagesManager = new HashMap<String, TreeSet<HMessage>>();
-	}
+  public HeartBeatManagerImpl() {
+    threadsManager = new HashMap<String, Future<Void>>();
+    messagesManager = new HashMap<String, TreeSet<HeartbeatMessage>>();
+  }
 
-	@Override
-	public void initialize(final int maxHeartbeat) throws Exception {
-		__executorService = Executors.newFixedThreadPool(maxHeartbeat);
-		info("INITIALIZE HEART BEAT", buildgen(maxHeartbeat));
-	}
+  @Override
+  public void initialize(final int maxHeartbeat) throws Exception {
+    executorService = Executors.newFixedThreadPool(maxHeartbeat);
+    info("INITIALIZE HEART BEAT", buildgen(maxHeartbeat));
+  }
 
-	@Override
-	public synchronized void create(final String id, final AbstractHeartBeat heartbeat) {
-		try {
-			info("CREATE HEART BEAT", buildgen("id: ", id));
-			// Add the listener
-			var listener = new TreeSet<HMessage>();
-			heartbeat.setMessageListener(listener);
-			__messagesManager.put(id, listener);
-			// Start the heart-beat
-			var future = __executorService.submit(heartbeat);
-			__threadsManager.put(id, future);
-		} catch (Exception e) {
-			error(e, "id: ", id);
-		}
-	}
+  @Override
+  public synchronized void create(final String id, final AbstractHeartBeat heartbeat) {
+    try {
+      info("CREATE HEART BEAT", buildgen("id: ", id));
+      // Add the listener
+      var listener = new TreeSet<HeartbeatMessage>();
+      heartbeat.setMessageListener(listener);
+      messagesManager.put(id, listener);
+      // Start the heart-beat
+      var future = executorService.submit(heartbeat);
+      threadsManager.put(id, future);
+    } catch (Exception e) {
+      error(e, "id: ", id);
+    }
+  }
 
-	@Override
-	public synchronized void dispose(final String id) {
-		try {
-			if (!__threadsManager.containsKey(id)) {
-				throw new HeartbeatNotFoundException();
-			}
+  @Override
+  public synchronized void dispose(final String id) {
+    try {
+      if (!threadsManager.containsKey(id)) {
+        throw new HeartbeatNotFoundException();
+      }
 
-			var future = __threadsManager.get(id);
-			if (future == null) {
-				throw new NullPointerException();
-			}
+      var future = threadsManager.get(id);
+      if (future == null) {
+        throw new NullPointerException();
+      }
 
-			future.cancel(true);
-			__threadsManager.remove(id);
+      future.cancel(true);
+      threadsManager.remove(id);
 
-			info("DISPOSE HEART BEAT", buildgen(id));
+      info("DISPOSE HEART BEAT", buildgen(id));
 
-			// Remove the listener
-			__messagesManager.get(id).clear();
-			__messagesManager.remove(id);
+      // Remove the listener
+      messagesManager.get(id).clear();
+      messagesManager.remove(id);
 
-			future = null;
+      future = null;
 
-		} catch (Exception e) {
-			error(e, "id: ", id);
-		}
-	}
+    } catch (Exception e) {
+      error(e, "id: ", id);
+    }
+  }
 
-	@Override
-	public synchronized boolean contains(final String id) {
-		return __threadsManager.containsKey(id);
-	}
+  @Override
+  public synchronized boolean contains(final String id) {
+    return threadsManager.containsKey(id);
+  }
 
-	@Override
-	public synchronized void clear() {
-		if (__executorService != null) {
-			__executorService.shutdownNow();
-		}
-		__executorService = null;
-		__threadsManager.clear();
-	}
+  @Override
+  public synchronized void clear() {
+    if (executorService != null) {
+      executorService.shutdownNow();
+    }
+    executorService = null;
+    threadsManager.clear();
+  }
 
-	@Override
-	public void sendMessage(String id, EMessage message, double delayTime) {
-		var container = HMessage.newInstance(message, delayTime);
-		var treeSet = __messagesManager.get(id);
-		synchronized (treeSet) {
-			treeSet.add(container);
-		}
-	}
+  @Override
+  public void sendMessage(String id, ExtraMessage message, double delayTime) {
+    var container = HeartbeatMessage.newInstance(message, delayTime);
+    var treeSet = messagesManager.get(id);
+    synchronized (treeSet) {
+      treeSet.add(container);
+    }
+  }
 
-	@Override
-	public void sendMessage(String id, EMessage message) {
-		sendMessage(id, message, 0);
-	}
-
+  @Override
+  public void sendMessage(String id, ExtraMessage message) {
+    sendMessage(id, message, 0);
+  }
 }
