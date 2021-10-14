@@ -21,263 +21,321 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.physic2d.graphic;
 
+import com.tenio.engine.physic2d.math.Vector2;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.util.List;
-
-import com.tenio.engine.physic2d.math.Vector2;
+import org.apache.logging.log4j.core.tools.picocli.CommandLine;
 
 /**
- * This class provides some methods for painting objects to a screen
- * 
- * @author kong
- *
+ * This class provides some methods for painting objects to a screen.
  */
 public final class Paint {
 
-	// These objects for temporary calculations
-	private final Vector2 __temp1 = Vector2.newInstance();
-	private final Vector2 __temp2 = Vector2.newInstance();
-	private final Vector2 __temp3 = Vector2.newInstance();
-	private final Vector2 __temp4 = Vector2.newInstance();
+  private static final Paint instance = new Paint();
 
-	/**
-	 * It is used for rendering an object in shape
-	 */
-	private final Polygon __polygon = new Polygon();
+  // These objects for temporary calculations
+  private final Vector2 temp1 = Vector2.newInstance();
+  private final Vector2 temp2 = Vector2.newInstance();
+  private final Vector2 temp3 = Vector2.newInstance();
+  private final Vector2 temp4 = Vector2.newInstance();
+  /**
+   * It is used for rendering an object in shape.
+   */
+  private final Polygon polygon = new Polygon();
+  private final Color bgTextColor;
+  private Graphics brush;
+  private Color penColor;
+  private Color bgColor;
+  /**
+   * The drawing text has a background color or not.
+   */
+  private boolean bgTextOpaque;
+  private Color textColor;
 
-	private Graphics __brush;
-	private Color __penColor;
-	private Color __bgColor;
-	/**
-	 * The drawing text has a background color or not
-	 */
-	private boolean __bgTextOpaque;
-	private Color __textColor;
-	private Color __bgTextColor;
+  private Paint() {
+    if (instance != null) {
+      throw new CommandLine.InitializationException("Could not recreate this instance");
+    }
 
-	private static volatile Paint __instance;
+    brush = null;
+    penColor = Color.BLACK;
+    bgColor = null;
 
-	private Paint() {
-		__brush = null;
-		__penColor = Color.BLACK;
-		__bgColor = null;
+    bgTextOpaque = false;
+    textColor = Color.BLACK;
+    bgTextColor = Color.WHITE;
+  } // prevent creation manually
 
-		__bgTextOpaque = false;
-		__textColor = Color.BLACK;
-		__bgTextColor = Color.WHITE;
+  // preventing Singleton object instantiation from outside
+  // creates multiple instance if two thread access this method simultaneously
+  public static Paint getInstance() {
+    return instance;
+  }
 
-	} // prevent creation manually
+  /**
+   * Call this before drawing.
+   *
+   * @param graphic see {@link Graphics}
+   */
+  public void startDrawing(Graphics graphic) {
+    brush = graphic;
+  }
 
-	// preventing Singleton object instantiation from outside
-	// creates multiple instance if two thread access this method simultaneously
-	public static Paint getInstance() {
-		if (__instance == null) {
-			__instance = new Paint();
-		}
-		return __instance;
-	}
+  // ------------------ Draw Text ------------------
+  // -----------------------------------------------
 
-	/**
-	 * Call this before drawing
-	 * 
-	 * @param graphic see {@link Graphics}
-	 */
-	public void startDrawing(Graphics graphic) {
-		__brush = graphic;
-	}
+  /**
+   * Draw a text at a position.
+   *
+   * @param x    position in x
+   * @param y    position in y
+   * @param text the text content
+   */
+  public void drawTextAtPosition(int x, int y, String text) {
+    final var back = brush.getColor();
+    y += getFontHeight() - 2;
+    if (bgTextOpaque) {
+      FontMetrics fm = brush.getFontMetrics();
+      brush.setColor(bgTextColor);
+      brush.fillRect(x, y - fm.getAscent() + fm.getDescent(), fm.stringWidth(text), fm.getAscent());
+    }
+    brush.setColor(textColor);
+    brush.drawString(text, x, y);
+    brush.setColor(back);
+  }
 
-	// ------------------ Draw Text ------------------
-	// -----------------------------------------------
-	public void drawTextAtPosition(int x, int y, String s) {
-		var back = __brush.getColor();
-		y += getFontHeight() - 2;
-		if (__bgTextOpaque) {
-			FontMetrics fm = __brush.getFontMetrics();
-			__brush.setColor(__bgTextColor);
-			__brush.fillRect(x, y - fm.getAscent() + fm.getDescent(), fm.stringWidth(s), fm.getAscent());
-		}
-		__brush.setColor(__textColor);
-		__brush.drawString(s, x, y);
-		__brush.setColor(back);
-	}
+  public void drawTextAtPosition(float x, float y, String text) {
+    drawTextAtPosition((int) x, (int) y, text);
+  }
 
-	public void drawTextAtPosition(float x, float y, String s) {
-		drawTextAtPosition((int) x, (int) y, s);
-	}
+  public void drawTextAtPosition(Vector2 position, String text) {
+    drawTextAtPosition((int) position.x, (int) position.y, text);
+  }
 
-	public void drawTextAtPosition(Vector2 position, String s) {
-		drawTextAtPosition((int) position.x, (int) position.y, s);
-	}
+  public void enableOpaqueText(boolean enabled) {
+    bgTextOpaque = enabled;
+  }
 
-	public void enableOpaqueText(boolean enabled) {
-		__bgTextOpaque = enabled;
-	}
+  public void setTextColor(Color color) {
+    textColor = color;
+  }
 
-	public void setTextColor(Color color) {
-		__textColor = color;
-	}
+  public void setTextColor(int r, int g, int b) {
+    textColor = new Color(r, g, b);
+  }
 
-	public void setTextColor(int r, int g, int b) {
-		__textColor = new Color(r, g, b);
-	}
+  /**
+   * Retrieves the height of font.
+   *
+   * @return the font's height
+   */
+  public int getFontHeight() {
+    if (brush == null) {
+      return 0;
+    }
+    return brush.getFontMetrics().getHeight();
+  }
 
-	public int getFontHeight() {
-		if (__brush == null) {
-			return 0;
-		}
-		return __brush.getFontMetrics().getHeight();
-	}
+  // ------------------ Draw Pixels ----------------
+  // -----------------------------------------------
 
-	// ------------------ Draw Pixels ----------------
-	// -----------------------------------------------
-	public void drawDot(Vector2 position, Color color) {
-		drawDot((int) position.x, (int) position.y, color);
-	}
+  public void drawDot(Vector2 position, Color color) {
+    drawDot((int) position.x, (int) position.y, color);
+  }
 
-	public void drawDot(int x, int y, Color color) {
-		__brush.setColor(__bgColor);
-		__brush.fillRect(x, y, 0, 0);
-	}
+  public void drawDot(int x, int y, Color color) {
+    brush.setColor(bgColor);
+    brush.fillRect(x, y, 0, 0);
+  }
 
-	// ------------------ Draw Line ------------------
-	// -----------------------------------------------
-	public void drawLine(Vector2 from, Vector2 to) {
-		drawLine(from.x, from.y, to.x, to.y);
-	}
+  // ------------------ Draw Line ------------------
+  // -----------------------------------------------
 
-	public void drawLine(int a, int b, int x, int y) {
-		__brush.setColor(__penColor);
-		__brush.drawLine(a, b, x, y);
-	}
+  public void drawLine(Vector2 from, Vector2 to) {
+    drawLine(from.x, from.y, to.x, to.y);
+  }
 
-	public void drawLine(float a, float b, float x, float y) {
-		drawLine((int) a, (int) b, (int) x, (int) y);
-	}
+  public void drawLine(int a, int b, int x, int y) {
+    brush.setColor(penColor);
+    brush.drawLine(a, b, x, y);
+  }
 
-	public void drawPolyLine(List<Vector2> points) {
-		// make sure we have at least 2 points
-		if (points.size() < 2) {
-			return;
-		}
+  public void drawLine(float a, float b, float x, float y) {
+    drawLine((int) a, (int) b, (int) x, (int) y);
+  }
 
-		__polygon.reset();
+  /**
+   * Draw a polygon line.
+   *
+   * @param points the list of points
+   */
+  public void drawPolyLine(List<Vector2> points) {
+    // make sure we have at least 2 points
+    if (points.size() < 2) {
+      return;
+    }
 
-		for (var v : points) {
-			__polygon.addPoint((int) v.x, (int) v.y);
-		}
-		__brush.setColor(__penColor);
-		__brush.drawPolygon(__polygon);
-	}
+    polygon.reset();
 
-	public void drawLineWithArrow(Vector2 from, Vector2 to, float size) {
-		__temp1.set(to).sub(from).normalize();
-		var norm = __temp1;
+    for (var v : points) {
+      polygon.addPoint((int) v.x, (int) v.y);
+    }
+    brush.setColor(penColor);
+    brush.drawPolygon(polygon);
+  }
 
-		// calculate where the arrow is attached
-		__temp2.set(norm).mul(size);
-		__temp3.set(to).sub(__temp2);
-		var crossingPoint = __temp3;
+  /**
+   * Draw a line with an arrow on its head.
+   *
+   * @param from the start point
+   * @param to   the target point
+   * @param size the size
+   */
+  public void drawLineWithArrow(Vector2 from, Vector2 to, float size) {
+    temp1.set(to).sub(from).normalize();
+    var norm = temp1;
 
-		// calculate the two extra points required to make the arrowhead
-		__temp4.set(norm.perpendicular()).mul(0.4f * size).add(crossingPoint);
-		var arrowPoint1 = __temp4;
-		var arrowPoint2 = __temp4;
+    // calculate where the arrow is attached
+    temp2.set(norm).mul(size);
+    temp3.set(to).sub(temp2);
+    var crossingPoint = temp3;
 
-		// draw the line
-		__brush.setColor(__penColor);
-		__brush.drawLine((int) from.x, (int) from.y, (int) crossingPoint.x, (int) crossingPoint.y);
+    // calculate the two extra points required to make the arrowhead
+    temp4.set(norm.perpendicular()).mul(0.4f * size).add(crossingPoint);
+    final var arrowPoint1 = temp4;
+    final var arrowPoint2 = temp4;
 
-		// draw the arrowhead (filled with the currently selected brush)
-		__polygon.reset();
+    // draw the line
+    brush.setColor(penColor);
+    brush.drawLine((int) from.x, (int) from.y, (int) crossingPoint.x, (int) crossingPoint.y);
 
-		__polygon.addPoint((int) arrowPoint1.x, (int) arrowPoint1.y);
-		__polygon.addPoint((int) arrowPoint2.x, (int) arrowPoint2.y);
-		__polygon.addPoint((int) to.x, (int) to.y);
+    // draw the arrowhead (filled with the currently selected brush)
+    polygon.reset();
 
-		if (__bgColor != null) {
-			__brush.setColor(__bgColor);
-			__brush.fillPolygon(__polygon);
-		}
-	}
+    polygon.addPoint((int) arrowPoint1.x, (int) arrowPoint1.y);
+    polygon.addPoint((int) arrowPoint2.x, (int) arrowPoint2.y);
+    polygon.addPoint((int) to.x, (int) to.y);
 
-	public void drawCross(Vector2 position, int diameter) {
-		drawLine((int) position.x - diameter, (int) position.y - diameter, (int) position.x + diameter,
-				(int) position.y + diameter);
-		drawLine((int) position.x - diameter, (int) position.y + diameter, (int) position.x + diameter,
-				(int) position.y - diameter);
-	}
+    if (bgColor != null) {
+      brush.setColor(bgColor);
+      brush.fillPolygon(polygon);
+    }
+  }
 
-	// ------------------ Draw Geometry ------------------
-	// ---------------------------------------------------
-	public void fillRect(Color c, int left, int top, int width, int height) {
-		var old = __brush.getColor();
-		__brush.setColor(c);
-		__brush.fillRect(left, top, width, height);
-		__brush.setColor(old);
-	}
+  /**
+   * Draw a cross.
+   *
+   * @param position the position
+   * @param diameter the diameter
+   */
+  public void drawCross(Vector2 position, int diameter) {
+    drawLine((int) position.x - diameter, (int) position.y - diameter, (int) position.x + diameter,
+        (int) position.y + diameter);
+    drawLine((int) position.x - diameter, (int) position.y + diameter, (int) position.x + diameter,
+        (int) position.y - diameter);
+  }
 
-	public void drawRect(int left, int top, int right, int bot) {
-		if (left > right) {
-			int tmp = right;
-			right = left;
-			left = tmp;
-		}
-		__brush.setColor(__penColor);
-		__brush.drawRect(left, top, right - left, bot - top);
-		if (__bgColor != null) {
-			__brush.setColor(__bgColor);
-			__brush.fillRect(left, top, right - left, bot - top);
-		}
+  // ------------------ Draw Geometry ------------------
+  // ---------------------------------------------------
 
-	}
+  /**
+   * Fill the rectangle with color.
+   *
+   * @param color  the color
+   * @param left   left point
+   * @param top    top point
+   * @param width  width value
+   * @param height height value
+   */
+  public void fillRect(Color color, int left, int top, int width, int height) {
+    var old = brush.getColor();
+    brush.setColor(color);
+    brush.fillRect(left, top, width, height);
+    brush.setColor(old);
+  }
 
-	public void drawRect(float left, float top, float right, float bot) {
-		drawRect((int) left, (int) top, (int) right, (int) bot);
-	}
+  /**
+   * Draw a rectangle.
+   *
+   * @param left   the left point
+   * @param top    the top point
+   * @param right  the right point
+   * @param bottom the bottom point
+   */
+  public void drawRect(int left, int top, int right, int bottom) {
+    if (left > right) {
+      int tmp = right;
+      right = left;
+      left = tmp;
+    }
+    brush.setColor(penColor);
+    brush.drawRect(left, top, right - left, bottom - top);
+    if (bgColor != null) {
+      brush.setColor(bgColor);
+      brush.fillRect(left, top, right - left, bottom - top);
+    }
+  }
 
-	public void drawClosedShape(List<Vector2> points) {
+  public void drawRect(float left, float top, float right, float bot) {
+    drawRect((int) left, (int) top, (int) right, (int) bot);
+  }
 
-		__polygon.reset();
+  /**
+   * Draw a closed shape.
+   *
+   * @param points the list of points
+   */
+  public void drawClosedShape(List<Vector2> points) {
 
-		for (Vector2 p : points) {
-			__polygon.addPoint((int) p.x, (int) p.y);
-		}
-		__brush.setColor(__penColor);
-		__brush.drawPolygon(__polygon);
-		if (__bgColor != null) {
-			__brush.fillPolygon(__polygon);
-		}
-	}
+    polygon.reset();
 
-	public void drawCircle(Vector2 position, float radius) {
-		drawCircle(position.x, position.y, radius);
-	}
+    for (Vector2 p : points) {
+      polygon.addPoint((int) p.x, (int) p.y);
+    }
+    brush.setColor(penColor);
+    brush.drawPolygon(polygon);
+    if (bgColor != null) {
+      brush.fillPolygon(polygon);
+    }
+  }
 
-	public void drawCircle(float x, float y, float radius) {
-		__brush.setColor(__penColor);
-		__brush.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
-		if (__bgColor != null) {
-			__brush.setColor(__bgColor);
-			__brush.fillOval((int) (x - radius + 1), (int) (y - radius + 1), (int) (radius * 2 - 1),
-					(int) (radius * 2 - 1));
-		}
-	}
+  public void drawCircle(Vector2 position, float radius) {
+    drawCircle(position.x, position.y, radius);
+  }
 
-	public void drawCircle(int x, int y, float radius) {
-		drawCircle((float) x, (float) y, radius);
-	}
+  /**
+   * Draw a circle.
+   *
+   * @param x      the x point
+   * @param y      the y point
+   * @param radius the radius
+   */
+  public void drawCircle(float x, float y, float radius) {
+    brush.setColor(penColor);
+    brush.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2),
+        (int) (radius * 2));
+    if (bgColor != null) {
+      brush.setColor(bgColor);
+      brush.fillOval((int) (x - radius + 1), (int) (y - radius + 1), (int) (radius * 2 - 1),
+          (int) (radius * 2 - 1));
+    }
+  }
 
-	public void setPenColor(Color color) {
-		__penColor = color;
-	}
+  public void drawCircle(int x, int y, float radius) {
+    drawCircle((float) x, (float) y, radius);
+  }
 
-	public void setBgColor(Color color) {
-		__bgColor = color;
-	}
+  public void setPenColor(Color color) {
+    penColor = color;
+  }
 
+  public void setBgColor(Color color) {
+    bgColor = color;
+  }
 }

@@ -21,18 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.physic2d.graphic;
 
 /**
- * This interface provides a method for rending objects to a screen
+ * This interface provides a method for rending objects to a screen.
  */
 public interface Renderable {
 
-	/**
-	 * To render objects to screen
-	 * 
-	 * @param paint see {@link Paint}
-	 */
-	void render(Paint paint);
-
+  /**
+   * To render objects to screen.
+   *
+   * @param paint see {@link Paint}
+   */
+  void render(Paint paint);
 }

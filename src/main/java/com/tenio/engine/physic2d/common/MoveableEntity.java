@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.physic2d.common;
 
 import com.tenio.engine.physic2d.math.Matrix3;
@@ -32,209 +33,220 @@ import com.tenio.engine.physic2d.math.Vector2;
  */
 public abstract class MoveableEntity extends BaseGameEntity {
 
-	// for temporary calculations
-	private final Vector2 __temp1 = Vector2.newInstance();
-	private final Matrix3 __matrix = Matrix3.newInstance();
+  // for calculations
+  private final Matrix3 matrix3 = Matrix3.newInstance();
+  private final Vector2 velocity = Vector2.newInstance();
+  private final Vector2 heading = Vector2.newInstance();
+  private final Vector2 side = Vector2.newInstance();
+  // for entity's mass
+  private final float mass;
+  // vector for velocity
+  private float velocityX;
+  private float velocityY;
+  // a normalized vector pointing in the direction the entity is heading
+  private float headingX;
+  private float headingY;
+  // a vector perpendicular to the heading vector
+  private float sideX;
+  private float sideY;
+  // the maximum speed this entity may travel at
+  private float maxSpeed;
+  // the maximum force this entity can produce to power itself
+  // (think rockets and thrust)
+  private float maxForce;
+  // the maximum rate (radians per second) this vehicle can rotate
+  private float maxTurnRate;
+  // current rotation
+  private float rotation;
 
-	// vector for velocity
-	private float __velocityX;
-	private float __velocityY;
-	private Vector2 __velocity = Vector2.newInstance();
-	// a normalized vector pointing in the direction the entity is heading
-	private float __headingX;
-	private float __headingY;
-	private Vector2 __heading = Vector2.newInstance();
-	// a vector perpendicular to the heading vector
-	private float __sideX;
-	private float __sideY;
-	private Vector2 __side = Vector2.newInstance();
-	// for entity's mass
-	private float __mass;
-	// the maximum speed this entity may travel at
-	private float __maxSpeed;
-	// the maximum force this entity can produce to power itself
-	// (think rockets and thrust)
-	private float __maxForce;
-	// the maximum rate (radians per second) this vehicle can rotate
-	private float __maxTurnRate;
-	// current rotation
-	private float __rotation;
+  /**
+   * Constructor.
+   *
+   * @param position    the current position
+   * @param radius      the radius
+   * @param velocity    the velocity
+   * @param maxSpeed    the max speed
+   * @param heading     the heading vector
+   * @param mass        the mass
+   * @param scale       the scale value
+   * @param maxTurnRate the max turn rate
+   * @param maxForce    the max force
+   */
+  public MoveableEntity(Vector2 position, float radius, Vector2 velocity, float maxSpeed,
+                        Vector2 heading, float mass,
+                        Vector2 scale, float maxTurnRate, float maxForce) {
+    super(0, position.x, position.y, radius);
 
-	public MoveableEntity(Vector2 position, float radius, Vector2 velocity, float maxSpeed, Vector2 heading, float mass,
-			Vector2 scale, float maxTurnRate, float maxForce) {
-		super(0, position.x, position.y, radius);
+    setVelocity(velocity);
+    setScale(scale);
+    setHeading(heading);
+    this.mass = mass;
+    this.maxSpeed = maxSpeed;
+    this.maxTurnRate = maxTurnRate;
+    this.maxForce = maxForce;
+  }
 
-		setVelocity(velocity);
-		setScale(scale);
-		setHeading(heading);
-		__mass = mass;
-		__maxSpeed = maxSpeed;
-		__maxTurnRate = maxTurnRate;
-		__maxForce = maxForce;
-	}
+  public float getVelocityX() {
+    return velocityX;
+  }
 
-	public float getVelocityX() {
-		return __velocityX;
-	}
+  public float getVelocityY() {
+    return velocityY;
+  }
 
-	public float getVelocityY() {
-		return __velocityY;
-	}
+  public Vector2 getVelocity() {
+    return velocity.set(velocityX, velocityY);
+  }
 
-	public Vector2 getVelocity() {
-		return __velocity.set(__velocityX, __velocityY);
-	}
+  public void setVelocity(Vector2 velocity) {
+    setVelocity(velocity.x, velocity.y);
+  }
 
-	public void setVelocity(float x, float y) {
-		__velocityX = x;
-		__velocityY = y;
-	}
+  public void setVelocity(float x, float y) {
+    velocityX = x;
+    velocityY = y;
+  }
 
-	public void setVelocity(Vector2 velocity) {
-		setVelocity(velocity.x, velocity.y);
-	}
+  public float getHeadingX() {
+    return headingX;
+  }
 
-	public float getHeadingX() {
-		return __headingX;
-	}
+  public float getHeadingY() {
+    return headingY;
+  }
 
-	public float getHeadingY() {
-		return __headingY;
-	}
+  public Vector2 getHeading() {
+    return heading.set(headingX, headingY);
+  }
 
-	public Vector2 getHeading() {
-		return __heading.set(__headingX, __headingY);
-	}
+  public void setHeading(Vector2 heading) {
+    setHeading(heading.x, heading.y);
+  }
 
-	/**
-	 * First checks that the given heading is not a vector of zero length. If the
-	 * new heading is valid this function sets the entity's heading and side vectors
-	 * accordingly
-	 * 
-	 * @param x the new heading in X
-	 * @param y the new heading in Y
-	 */
-	public void setHeading(float x, float y) {
-		__headingX = x;
-		__headingY = y;
-		// the side vector must always be perpendicular to the heading
-		__temp1.set(x, y).perpendicular();
-		__sideX = __temp1.x;
-		__sideY = __temp1.y;
-		// update the rotation
-		float angle = (float) Math.atan2(__headingY, __headingX);
-		float degrees = (float) (180 * angle / Math.PI);
-		degrees = (360 + Math.round(degrees)) % 360;
-		__rotation = degrees;
-	}
+  /**
+   * First checks that the given heading is not a vector of zero length. If the
+   * new heading is valid this function sets the entity's heading and side vectors
+   * accordingly
+   *
+   * @param x the new heading in X
+   * @param y the new heading in Y
+   */
+  public void setHeading(float x, float y) {
+    headingX = x;
+    headingY = y;
+    // the side vector must always be perpendicular to the heading
+    var temp = Vector2.newInstance().set(x, y).perpendicular();
+    sideX = temp.x;
+    sideY = temp.y;
+    // update the rotation
+    float angle = (float) Math.atan2(headingY, headingX);
+    float degrees = (float) (180 * angle / Math.PI);
+    degrees = (360 + Math.round(degrees)) % 360;
+    rotation = degrees;
+  }
 
-	public void setHeading(Vector2 heading) {
-		setHeading(heading.x, heading.y);
-	}
+  public float getSideX() {
+    return sideX;
+  }
 
-	public float getSideX() {
-		return __sideX;
-	}
+  public float getSideY() {
+    return sideY;
+  }
 
-	public float getSideY() {
-		return __sideY;
-	}
+  public Vector2 getSide() {
+    return side.set(sideX, sideY);
+  }
 
-	public Vector2 getSide() {
-		return __side.set(__sideX, __sideY);
-	}
+  private void setSide(Vector2 side) {
+    sideX = side.x;
+    sideY = side.y;
+  }
 
-	private void __setSide(Vector2 side) {
-		__sideX = side.x;
-		__sideY = side.y;
-	}
+  public float getRotation() {
+    return rotation;
+  }
 
-	public float getRotation() {
-		return __rotation;
-	}
+  public float getMass() {
+    return mass;
+  }
 
-	public float getMass() {
-		return __mass;
-	}
+  public float getMaxSpeed() {
+    return maxSpeed;
+  }
 
-	public float getMaxSpeed() {
-		return __maxSpeed;
-	}
+  public void setMaxSpeed(float maxSpeed) {
+    this.maxSpeed = maxSpeed;
+  }
 
-	public void setMaxSpeed(float maxSpeed) {
-		__maxSpeed = maxSpeed;
-	}
+  public float getMaxForce() {
+    return maxForce;
+  }
 
-	public float getMaxForce() {
-		return __maxForce;
-	}
+  public void setMaxForce(float maxForce) {
+    this.maxForce = maxForce;
+  }
 
-	public void setMaxForce(float maxForce) {
-		__maxForce = maxForce;
-	}
+  public boolean isSpeedMaxedOut() {
+    return maxSpeed * maxSpeed >= getVelocity().getLengthSqr();
+  }
 
-	public boolean isSpeedMaxedOut() {
-		return __maxSpeed * __maxSpeed >= getVelocity().getLengthSqr();
-	}
+  public float getSpeed() {
+    return getVelocity().getLength();
+  }
 
-	public float getSpeed() {
-		return getVelocity().getLength();
-	}
+  public float getSpeedSqr() {
+    return getVelocity().getLengthSqr();
+  }
 
-	public float getSpeedSqr() {
-		return getVelocity().getLengthSqr();
-	}
+  public float getMaxTurnRate() {
+    return maxTurnRate;
+  }
 
-	public float getMaxTurnRate() {
-		return __maxTurnRate;
-	}
+  public void setMaxTurnRate(float maxTurnRate) {
+    this.maxTurnRate = maxTurnRate;
+  }
 
-	public void setMaxTurnRate(float maxTurnRate) {
-		__maxTurnRate = maxTurnRate;
-	}
+  /**
+   * Given a target position, this method rotates the entity's heading and side
+   * vectors by an amount not greater than m_dMaxTurnRate until it directly faces
+   * the target.
+   *
+   * @param target the new target vector
+   * @return <b>true</b> when the heading is facing in the desired direction
+   */
+  public boolean isRotatedHeadingToFacePosition(Vector2 target) {
+    // get direction between 2 vectors
+    var temp = Vector2.newInstance().set(target).sub(getPosition()).normalize();
 
-	/**
-	 * Given a target position, this method rotates the entity's heading and side
-	 * vectors by an amount not greater than m_dMaxTurnRate until it directly faces
-	 * the target.
-	 *
-	 * @param target the new target vector
-	 * 
-	 * @return <b>true</b> when the heading is facing in the desired direction
-	 */
-	public boolean isRotatedHeadingToFacePosition(Vector2 target) {
-		// get direction between 2 vectors
-		__temp1.set(target).sub(getPosition()).normalize();
+    // first determine the angle between the heading vector and the target
+    float angle = (float) Math.acos(getHeading().getDotProductValue(temp));
+    if (Float.isNaN(angle)) {
+      angle = 0;
+    }
 
-		// first determine the angle between the heading vector and the target
-		float angle = (float) Math.acos(getHeading().getDotProductValue(__temp1));
-		if (Float.isNaN(angle)) {
-			angle = 0;
-		}
+    // return true if the player is facing the target
+    if (angle < 0.00001) {
+      return true;
+    }
 
-		// return true if the player is facing the target
-		if (angle < 0.00001) {
-			return true;
-		}
+    // clamp the amount to turn to the max turn rate
+    if (angle > maxTurnRate) {
+      angle = maxTurnRate;
+    }
 
-		// clamp the amount to turn to the max turn rate
-		if (angle > __maxTurnRate) {
-			angle = __maxTurnRate;
-		}
+    // The next few lines use a rotation matrix to rotate the player's heading
+    // vector accordingly
+    matrix3.initialize();
 
-		// The next few lines use a rotation matrix to rotate the player's heading
-		// vector accordingly
-		__matrix.initialize();
+    // notice how the direction of rotation has to be determined when creating
+    // the rotation matrix
+    matrix3.rotate(angle * getHeading().getSignValue(temp));
+    matrix3.transformVector2D(getHeading());
+    matrix3.transformVector2D(getVelocity());
 
-		// notice how the direction of rotation has to be determined when creating
-		// the rotation matrix
-		__matrix.rotate(angle * getHeading().getSignValue(__temp1));
-		__matrix.transformVector2D(getHeading());
-		__matrix.transformVector2D(getVelocity());
+    // finally, recreate m_vSide
+    setSide(getHeading().perpendicular());
 
-		// finally, recreate m_vSide
-		__setSide(getHeading().perpendicular());
-
-		return false;
-	}
+    return false;
+  }
 }

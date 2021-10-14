@@ -21,65 +21,71 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package com.tenio.engine.physic2d.graphic.window;
 
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.geom.Point2D;
-import java.net.URL;
 
+/**
+ * Supported methods for windows.
+ */
 public final class Windows {
 
-	public static int FOREGROUND_BLUE = 0x0001;
-	public static int FOREGROUND_GREEN = 0x0002;
-	public static int FOREGROUND_RED = 0x0004;
-	public static int FOREGROUND_INTENSITY = 0x0008;
-	public static int BACKGROUND_RED = 0x0040;
+  public static final long MF_CHECKED = 0x00000008L;
+  public static final long MF_UNCHECKED = 0x00000000L;
+  public static final long MFS_CHECKED = MF_CHECKED;
+  public static final long MFS_UNCHECKED = MF_UNCHECKED;
+  public static final int FOREGROUND_BLUE = 0x0001;
+  public static final int FOREGROUND_GREEN = 0x0002;
+  public static final int FOREGROUND_RED = 0x0004;
+  public static final int FOREGROUND_INTENSITY = 0x0008;
+  public static final int BACKGROUND_RED = 0x0040;
 
-	public final static long MF_CHECKED = 0x00000008L;
-	public final static long MF_UNCHECKED = 0x00000000L;
-	public final static long MFS_CHECKED = MF_CHECKED;
-	public final static long MFS_UNCHECKED = MF_UNCHECKED;
+  /**
+   * Load the windows icon.
+   *
+   * @param file the icon file
+   * @return the image
+   */
+  public static Image loadIcon(String file) {
+    var iconUrl = Windows.class.getResource(file);
+    var img = Toolkit.getDefaultToolkit().createImage(iconUrl);
+    return img;
+  }
 
-	public static class DPoint extends Point2D.Float {
+  /**
+   * Point in 2D.
+   */
+  public static class D2Point extends Point2D.Float {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -1196038548500345000L;
+    private static final long serialVersionUID = -1196038548500345000L;
 
-		@Override
-		public void setLocation(float x, float y) {
-			super.setLocation(Math.round(x), Math.round(y));
-		}
-	}
+    @Override
+    public void setLocation(float x, float y) {
+      super.setLocation(Math.round(x), Math.round(y));
+    }
+  }
 
-	public static class PPoint extends Point {
+  /**
+   * Point in 2D.
+   */
+  public static class P2Point extends Point {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 8698839709008819029L;
+    private static final long serialVersionUID = 8698839709008819029L;
 
-		public PPoint() {
-			this(0, 0);
-		}
+    public P2Point() {
+      this(0, 0);
+    }
 
-		public PPoint(int x, int y) {
-			super(x, y);
-		}
+    public P2Point(int x, int y) {
+      super(x, y);
+    }
 
-		public PPoint(Point point) {
-			super(point);
-		}
-
-	}
-
-	public static Image loadIcon(String file) {
-		URL icoURL = Windows.class.getResource(file);
-		Image img = Toolkit.getDefaultToolkit().createImage(icoURL);
-		return img;
-	}
-
+    public P2Point(Point point) {
+      super(point);
+    }
+  }
 }
