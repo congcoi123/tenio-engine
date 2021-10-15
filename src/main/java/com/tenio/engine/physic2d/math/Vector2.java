@@ -93,7 +93,7 @@ public class Vector2 {
   }
 
   /**
-   * <h3>Normalize a 2D Vector</h3> <br>
+   * <b>Normalize a 2D Vector</b> <br>
    * Detail <a href=
    * "https://www.khanacademy.org/computing/computer-programming/programming-natural-simulations/programming-vectors/a/vector-magnitude-normalization#targetText=To%20normalize%20a%20vector%2C%20therefore,is%20called%20a%20unit%20vector">normalize</a>.
    * Vector and how to use <a href=
@@ -121,7 +121,7 @@ public class Vector2 {
   }
 
   /**
-   * <h3>Calculates the dot product</h3> <br>
+   * <b>Calculates the dot product</b> <br>
    * Since the only way a negative number can be introduced to this equation is
    * the cosine function, the result of the dot product is negative if and only if
    * the vectors point in a direction greater than pi/2 radians (90 degrees) apart
@@ -148,7 +148,7 @@ public class Vector2 {
   }
 
   /**
-   * <h3>Get sign value between 2 vectors</h3> <br>
+   * <b>Get sign value between 2 vectors</b> <br>
    * How to compute <a href=
    * "https://stackoverflow.com/questions/14066933/direct-way-of-computing-clockwise-angle-between-2-vectors">sign
    * value</a>
