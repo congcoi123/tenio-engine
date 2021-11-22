@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.pool;
 
-import com.tenio.common.configuration.constant.CommonConstant;
+import com.tenio.common.constant.CommonConstant;
 import com.tenio.common.exception.NullElementPoolException;
 import com.tenio.common.logger.SystemLogger;
 import com.tenio.common.pool.ElementPool;
