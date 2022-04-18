@@ -30,7 +30,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.util.List;
-import org.apache.logging.log4j.core.tools.picocli.CommandLine;
 
 /**
  * This class provides some methods for painting objects to a screen.
@@ -60,7 +59,7 @@ public final class Paint {
 
   private Paint() {
     if (instance != null) {
-      throw new CommandLine.InitializationException("Could not recreate this instance");
+      throw new UnsupportedOperationException("Could not recreate this instance");
     }
 
     brush = null;

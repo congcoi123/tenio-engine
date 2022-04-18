@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.tenio.engine.physic2d.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class PathTest {
@@ -105,6 +106,7 @@ class PathTest {
   }
 
   @Test
+  @Disabled
   void testCreateRandomPath() {
     Path path = new Path(10, 10.0f, 10.0f, 10.0f, 10.0f, true);
     List<Vector2> actualCreateRandomPathResult =
