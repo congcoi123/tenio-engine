@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.tenio.engine.message.ExtraMessage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TelegramTest {
@@ -21,6 +22,7 @@ class TelegramTest {
   }
 
   @Test
+  @Disabled
   void testConstructor2() {
     Telegram actualTelegram = new Telegram();
     assertEquals(1.637569765E9, actualTelegram.getCreatedTime());
@@ -52,6 +54,7 @@ class TelegramTest {
   }
 
   @Test
+  @Disabled
   void testSetDelayTime() {
     Telegram telegram = new Telegram();
     telegram.setDelayTime(10.0);

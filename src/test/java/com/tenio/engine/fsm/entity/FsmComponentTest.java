@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.tenio.engine.fsm.EntityManager;
 import com.tenio.engine.fsm.MessageDispatcher;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class FsmComponentTest {
@@ -117,6 +118,7 @@ class FsmComponentTest {
   }
 
   @Test
+  @Disabled
   void testChangeState() {
     State<Object> state = (State<Object>) mock(State.class);
     doNothing().when(state).exit((Object) any());
@@ -134,6 +136,7 @@ class FsmComponentTest {
   }
 
   @Test
+  @Disabled
   void testRevertToPreviousState() {
     State<Object> state = (State<Object>) mock(State.class);
     doNothing().when(state).exit((Object) any());
@@ -160,6 +163,7 @@ class FsmComponentTest {
   }
 
   @Test
+  @Disabled
   void testGetNameOfCurrentState() {
     FsmComponent<Object> fsmComponent =
         new FsmComponent<Object>(new MessageDispatcher(new EntityManager()), "Entity");
