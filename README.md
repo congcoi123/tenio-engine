@@ -54,7 +54,7 @@ The [`TenIO`](https://github.com/congcoi123/tenio) project is currently availabl
 Please check out the [changelog](CHANGELOG.md) for more details.
 
 ## Contributing
-Please check out the [contributing guideline](CONTRIBUTING.md) for more details.
+Please check out the [checklist](CHECKLIST.md) and [contributing guideline](CONTRIBUTING.md) for more details.
 
 ## Installation
 ```sh
