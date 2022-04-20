@@ -39,11 +39,6 @@ based server specifically designed for multiplayer games, which supports UDP, TC
 
 This module provides the necessary mechanisms to build a game. It also supports some kind of pattern such as ECS, FSM, ... and integrates a simple physic 2D library. You can even observe the running entities on the server side by using the debugger window.
 
-## Dependencies
-```txt
-- tenio-common 0.0.1
-```
-
 ## Requirements
 - Java 11
 
