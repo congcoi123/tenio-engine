@@ -37,7 +37,7 @@
 [`TenIO`](https://github.com/congcoi123/tenio) is an open-source project to create multiplayer online games that includes a java NIO (Non-blocking I/O) 
 based server specifically designed for multiplayer games, which supports UDP, TCP, Websocket, HTTP transports, and available simple client projects for quick development.
 
-This module provides the necessary mechanisms to build a game. It also supports some kind of pattern such as ECS, FSM, ... and integrates a simple physic 2D library. You can even observe the running entities on the server side by using the debugger window.
+This module provides the necessary mechanisms to build a game. It also supports some kind of pattern such as ECS, FSM, and integrates a simple physic 2D library. You can even observe the running entities on the server side by using the debugger window.
 
 ## Requirements
 - Java 11
