@@ -39,14 +39,16 @@
     </scm>
 
     <properties>
+        <io.github.congcoi123.tenio.common>0.4.0</io.github.congcoi123.tenio.common>
+
         <google.guava.version>31.1-jre</google.guava.version>
-        <logging.log4j.version>2.17.2</logging.log4j.version>
+        <logging.log4j.version>2.19.0</logging.log4j.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <org.junit.jupiter.version>5.8.2</org.junit.jupiter.version>
-        <org.junit.platform.version>1.8.2</org.junit.platform.version>
-        <org.mockito.core.version>4.4.0</org.mockito.core.version>
+        <org.junit.jupiter.version>5.9.0</org.junit.jupiter.version>
+        <org.junit.platform.version>1.9.0</org.junit.platform.version>
+        <org.mockito.core.version>4.8.0</org.mockito.core.version>
 
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <jdk.release>11</jdk.release>
@@ -67,7 +69,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>tenio-common</artifactId>
-            <version>${project.version}</version>
+            <version>${io.github.congcoi123.tenio.common}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
