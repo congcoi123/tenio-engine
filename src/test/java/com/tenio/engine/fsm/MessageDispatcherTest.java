@@ -1,72 +1,128 @@
 package com.tenio.engine.fsm;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+import com.tenio.engine.fsm.entity.AbstractEntity;
+import com.tenio.engine.fsm.entity.Telegram;
 import com.tenio.engine.message.ExtraMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class MessageDispatcherTest {
-  @Test
-  void testConstructor() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     MessageDispatcher.telegrams
-    //     MessageDispatcher.entityManager
-    //     MessageDispatcher.messageListeners
 
-    new MessageDispatcher(new EntityManager());
-  }
+    private MessageDispatcher dispatcher;
+    
+    @Mock
+    private EntityManager mockEntityManager;
+    
+    @Mock
+    private AbstractEntity mockReceiver;
+    
+    @Mock
+    private ExtraMessage mockInfo;
+    
+    @Mock
+    private MessageListener mockListener;
 
-  @Test
-  void testDispatchMessage() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by dispatchMessage(double, String, String, int, ExtraMessage)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    private static final String SENDER_ID = "sender";
+    private static final String RECEIVER_ID = "receiver";
+    private static final int MSG_TYPE = 1;
 
-    (new MessageDispatcher(new EntityManager())).dispatchMessage(10.0, "Sender", "Receiver", 1,
-        mock(ExtraMessage.class));
-  }
+    @BeforeEach
+    void setUp() {
+        dispatcher = new MessageDispatcher(mockEntityManager);
+    }
 
-  @Test
-  void testUpdate() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by update(float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    @Test
+    void whenDispatchingImmediateMessage_shouldDeliverImmediately() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
+        dispatcher.listen(mockListener);
 
-    (new MessageDispatcher(new EntityManager())).update(0.5f);
-  }
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
-  @Test
-  void testListen() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by listen(MessageListener)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+        // Then
+        verify(mockReceiver).handleMessage(any(Telegram.class));
+        verify(mockListener).onListen(any(Telegram.class), eq(true));
+    }
 
-    (new MessageDispatcher(new EntityManager())).listen(mock(MessageListener.class));
-  }
+    @Test
+    void whenDispatchingDelayedMessage_shouldQueueMessage() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        double delay = 1.0;
 
-  @Test
-  void testClear() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     MessageDispatcher.entityManager
-    //     MessageDispatcher.messageListeners
-    //     MessageDispatcher.telegrams
+        // When
+        dispatcher.dispatchMessage(delay, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
-    (new MessageDispatcher(new EntityManager())).clear();
-  }
+        // Then
+        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
+    }
+
+    @Test
+    void whenReceiverNotFound_shouldNotDispatchMessage() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(null);
+
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // Then
+        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
+    }
+
+    @Test
+    void whenMessageNotHandled_shouldNotifyListeners() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(false);
+        dispatcher.listen(mockListener);
+
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // Then
+        verify(mockListener).onListen(any(Telegram.class), eq(false));
+    }
+
+    @Test
+    void whenUpdating_shouldProcessQueuedMessages() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
+        dispatcher.listen(mockListener);
+        
+        // Queue a message with a small delay
+        dispatcher.dispatchMessage(0.1, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // When
+        dispatcher.update(0.2f);
+
+        // Then
+        verify(mockReceiver).handleMessage(any(Telegram.class));
+        verify(mockListener).onListen(any(Telegram.class), eq(true));
+    }
+
+    @Test
+    void whenClearing_shouldRemoveAllMessages() {
+        // Given
+        dispatcher.listen(mockListener);
+        dispatcher.dispatchMessage(1.0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // When
+        dispatcher.clear();
+
+        // Then
+        dispatcher.update(2.0f);
+        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
+        verify(mockListener, never()).onListen(any(Telegram.class), anyBoolean());
+    }
 }
 

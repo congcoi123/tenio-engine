@@ -1,145 +1,133 @@
 package com.tenio.engine.physic2d.math;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class Matrix3Test {
-  @Test
-  void testNewInstance() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     Matrix3.matrix
-    //     Matrix3.tempMatrix
 
-    Matrix3.newInstance();
-  }
+    private static final float DELTA = 0.0001f;
+    private Matrix3 matrix;
 
-  @Test
-  void testNewInstance2() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     Matrix3.matrix
-    //     Matrix3.tempMatrix
+    @BeforeEach
+    void setUp() {
+        matrix = Matrix3.newInstance();
+    }
 
-    Matrix3.newInstance();
-  }
+    @Test
+    void whenCreated_shouldBeIdentityMatrix() {
+        // Identity matrix should have 1s on the diagonal and 0s elsewhere
+        Vector2 point = Vector2.valueOf(1.0f, 1.0f);
+        matrix.transformVector2D(point);
+        assertEquals(1.0f, point.x, DELTA);
+        assertEquals(1.0f, point.y, DELTA);
+    }
 
-  @Test
-  void testInitialize() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     Matrix3.matrix
-    //     Matrix3.tempMatrix
+    @Test
+    void whenTranslating_shouldMovePoint() {
+        Vector2 point = Vector2.valueOf(1.0f, 1.0f);
+        matrix.translate(2.0f, 3.0f);
+        matrix.transformVector2D(point);
+        assertEquals(3.0f, point.x, DELTA); // 1 + 2
+        assertEquals(4.0f, point.y, DELTA); // 1 + 3
+    }
 
-    Matrix3.newInstance().initialize();
-  }
+    @Test
+    void whenScaling_shouldScalePoint() {
+        Vector2 point = Vector2.valueOf(2.0f, 3.0f);
+        matrix.scale(2.0f, 0.5f);
+        matrix.transformVector2D(point);
+        assertEquals(4.0f, point.x, DELTA); // 2 * 2
+        assertEquals(1.5f, point.y, DELTA); // 3 * 0.5
+    }
 
-  @Test
-  void testTransformVector2Ds() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by transformVector2Ds(List)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    @Test
+    void whenRotating_shouldRotatePoint() {
+        Vector2 point = Vector2.valueOf(1.0f, 0.0f);
+        // Rotate 90 degrees (π/2 radians)
+        matrix.rotate((float) Math.PI / 2);
+        matrix.transformVector2D(point);
+        assertEquals(0.0f, point.x, DELTA, "X coordinate after 90-degree rotation");
+        assertEquals(1.0f, point.y, DELTA, "Y coordinate after 90-degree rotation");
+    }
 
-    Matrix3 newInstanceResult = Matrix3.newInstance();
-    newInstanceResult.transformVector2Ds(new ArrayList<Vector2>());
-  }
+    @Test
+    void whenRotatingWithVectors_shouldRotatePoint() {
+        Vector2 forward = Vector2.valueOf(0.0f, 1.0f);
+        Vector2 side = Vector2.valueOf(1.0f, 0.0f);
+        Vector2 point = Vector2.valueOf(1.0f, 0.0f);
 
-  @Test
-  void testTransformVector2Ds2() {
-    Matrix3 newInstanceResult = Matrix3.newInstance();
+        matrix.rotate(forward, side);
+        matrix.transformVector2D(point);
+        assertEquals(1.0f, point.x, DELTA);
+        assertEquals(0.0f, point.y, DELTA);
+    }
 
-    ArrayList<Vector2> vector2List = new ArrayList<Vector2>();
-    vector2List.add(Vector2.newInstance());
-    newInstanceResult.transformVector2Ds(vector2List);
-    Vector2 getResult = vector2List.get(0);
-    assertEquals(0.0f, getResult.y);
-    assertEquals(0.0f, getResult.x);
-  }
+    @Test
+    void whenTransformingMultiplePoints_shouldTransformAll() {
+        List<Vector2> points = new ArrayList<>();
+        points.add(Vector2.valueOf(1.0f, 1.0f));
+        points.add(Vector2.valueOf(2.0f, 2.0f));
+        points.add(Vector2.valueOf(3.0f, 3.0f));
 
-  @Test
-  void testTransformVector2Ds3() {
-    Matrix3 newInstanceResult = Matrix3.newInstance();
+        matrix.translate(1.0f, 1.0f);
+        matrix.transformVector2Ds(points);
 
-    ArrayList<Vector2> vector2List = new ArrayList<Vector2>();
-    vector2List.add(Vector2.newInstance());
-    vector2List.add(Vector2.newInstance());
-    newInstanceResult.transformVector2Ds(vector2List);
-    Vector2 getResult = vector2List.get(0);
-    assertEquals(0.0f, getResult.y);
-    Vector2 getResult1 = vector2List.get(1);
-    assertEquals(0.0f, getResult1.y);
-    assertEquals(0.0f, getResult1.x);
-    assertEquals(0.0f, getResult.x);
-  }
+        assertEquals(2.0f, points.get(0).x, DELTA);
+        assertEquals(2.0f, points.get(0).y, DELTA);
+        assertEquals(3.0f, points.get(1).x, DELTA);
+        assertEquals(3.0f, points.get(1).y, DELTA);
+        assertEquals(4.0f, points.get(2).x, DELTA);
+        assertEquals(4.0f, points.get(2).y, DELTA);
+    }
 
-  @Test
-  void testTransformVector2D() {
-    Matrix3 newInstanceResult = Matrix3.newInstance();
-    Vector2 newInstanceResult1 = Vector2.newInstance();
-    newInstanceResult.transformVector2D(newInstanceResult1);
-    assertEquals(0.0f, newInstanceResult1.y);
-    assertEquals(0.0f, newInstanceResult1.x);
-  }
+    @Test
+    void whenCombiningTransformations_shouldApplyInOrder() {
+        Vector2 point = Vector2.valueOf(1.0f, 1.0f);
 
-  @Test
-  void testTranslate() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by translate(float, float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+        // Scale, then rotate 90 degrees, then translate
+        matrix.scale(2.0f, 2.0f);
+        matrix.rotate((float) Math.PI / 2);
+        matrix.translate(1.0f, 1.0f);
 
-    Matrix3.newInstance().translate(10.0f, 10.0f);
-  }
+        matrix.transformVector2D(point);
 
-  @Test
-  void testScale() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by scale(float, float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+        // After scale: (2, 2)
+        // After rotation: (-2, 2)
+        // After translation: (-1, 3)
+        assertEquals(-1.0f, point.x, DELTA);
+        assertEquals(3.0f, point.y, DELTA);
+    }
 
-    Matrix3.newInstance().scale(10.0f, 10.0f);
-  }
+    @Test
+    void whenSettingMatrixElements_shouldUpdateTransformation() {
+        matrix.p11(2.0f);
+        matrix.p22(2.0f);
+        
+        Vector2 point = Vector2.valueOf(1.0f, 1.0f);
+        matrix.transformVector2D(point);
+        
+        assertEquals(2.0f, point.x, DELTA);
+        assertEquals(2.0f, point.y, DELTA);
+    }
 
-  @Test
-  void testRotate() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by rotate(float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
-
-    Matrix3.newInstance().rotate(10.0f);
-  }
-
-  @Test
-  void testRotate2() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by rotate(Vector2, Vector2)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
-
-    Matrix3 newInstanceResult = Matrix3.newInstance();
-    Vector2 forward = Vector2.newInstance();
-    newInstanceResult.rotate(forward, Vector2.newInstance());
-  }
+    @Test
+    void whenInitializing_shouldResetToIdentity() {
+        // First apply some transformations
+        matrix.translate(2.0f, 3.0f);
+        matrix.scale(2.0f, 2.0f);
+        
+        // Then initialize back to identity
+        matrix.initialize();
+        
+        Vector2 point = Vector2.valueOf(1.0f, 1.0f);
+        matrix.transformVector2D(point);
+        
+        assertEquals(1.0f, point.x, DELTA);
+        assertEquals(1.0f, point.y, DELTA);
+    }
 }
 

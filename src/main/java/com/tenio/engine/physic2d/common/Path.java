@@ -124,7 +124,7 @@ public final class Path implements Renderable {
     for (int i = 0; i < numWaypoints; ++i) {
       float radialDist = MathUtility.randInRange(smaller * 0.2f, smaller);
 
-      var temp = Transformation.vec2dRotateAroundOrigin(radialDist, 0, i * spacing);
+      Vector2 temp = Transformation.vec2dRotateAroundOrigin(radialDist, 0, i * spacing);
 
       temp.x += midX;
       temp.y += midY;
@@ -172,12 +172,12 @@ public final class Path implements Renderable {
   public void render(Paint paint) {
     paint.setPenColor(Color.ORANGE);
 
-    var it = wayPoints.listIterator();
+    ListIterator<Vector2> it = wayPoints.listIterator();
 
-    var wp = it.next();
+    Vector2 wp = it.next();
 
     while (it.hasNext()) {
-      var n = it.next();
+      Vector2 n = it.next();
       paint.drawLine(wp, n);
 
       wp = n;

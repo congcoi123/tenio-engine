@@ -1,81 +1,122 @@
 package com.tenio.engine.fsm;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.tenio.engine.fsm.entity.AbstractEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class EntityManagerTest {
-  @Test
-  void testRegister() {
-    EntityManager entityManager = new EntityManager();
-    AbstractEntity abstractEntity = mock(AbstractEntity.class);
-    when(abstractEntity.getId()).thenReturn("42");
-    entityManager.register(abstractEntity);
-    verify(abstractEntity, atLeast(1)).getId();
-  }
 
-  @Test
-  void testContain() {
-    assertFalse((new EntityManager()).contain("42"));
-  }
+    private EntityManager manager;
+    
+    @Mock
+    private AbstractEntity mockEntity1;
+    
+    @Mock
+    private AbstractEntity mockEntity2;
 
-  @Test
-  void testCount() {
-    assertEquals(0L, (new EntityManager()).count());
-  }
+    private static final String ENTITY_ID_1 = "entity1";
+    private static final String ENTITY_ID_2 = "entity2";
 
-  @Test
-  void testGet() {
-    assertNull((new EntityManager()).get("42"));
-  }
+    @BeforeEach
+    void setUp() {
+        manager = new EntityManager();
+        when(mockEntity1.getId()).thenReturn(ENTITY_ID_1);
+        when(mockEntity2.getId()).thenReturn(ENTITY_ID_2);
+    }
 
-  @Test
-  void testUpdate() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by update(float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    @Test
+    void whenRegisteringEntity_shouldAddToManager() {
+        // When
+        manager.register(mockEntity1);
 
-    (new EntityManager()).update(0.5f);
-  }
+        // Then
+        assertTrue(manager.contain(ENTITY_ID_1));
+        assertEquals(1, manager.count());
+        assertEquals(mockEntity1, manager.get(ENTITY_ID_1));
+    }
 
-  @Test
-  void testGets() {
-    assertTrue((new EntityManager()).gets().isEmpty());
-  }
+    @Test
+    void whenRegisteringDuplicateEntity_shouldNotAdd() {
+        // Given
+        manager.register(mockEntity1);
 
-  @Test
-  void testRemove() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by remove(String)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+        // When
+        manager.register(mockEntity1);
 
-    (new EntityManager()).remove("42");
-  }
+        // Then
+        assertEquals(1, manager.count());
+    }
 
-  @Test
-  void testClear() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     AbstractLogger.logger
-    //     EntityManager.entities
+    @Test
+    void whenGettingNonExistentEntity_shouldReturnNull() {
+        assertNull(manager.get("non-existent"));
+    }
 
-    (new EntityManager()).clear();
-  }
+    @Test
+    void whenUpdating_shouldUpdateAllEntities() {
+        // Given
+        manager.register(mockEntity1);
+        manager.register(mockEntity2);
+        float deltaTime = 0.1f;
+
+        // When
+        manager.update(deltaTime);
+
+        // Then
+        verify(mockEntity1).update(deltaTime);
+        verify(mockEntity2).update(deltaTime);
+    }
+
+    @Test
+    void whenGettingAllEntities_shouldReturnCopyOfMap() {
+        // Given
+        manager.register(mockEntity1);
+        manager.register(mockEntity2);
+
+        // When
+        var entities = manager.gets();
+
+        // Then
+        assertEquals(2, entities.size());
+        assertTrue(entities.containsKey(ENTITY_ID_1));
+        assertTrue(entities.containsKey(ENTITY_ID_2));
+    }
+
+    @Test
+    void whenRemovingEntity_shouldRemoveFromManager() {
+        // Given
+        manager.register(mockEntity1);
+        manager.register(mockEntity2);
+
+        // When
+        manager.remove(ENTITY_ID_1);
+
+        // Then
+        assertFalse(manager.contain(ENTITY_ID_1));
+        assertTrue(manager.contain(ENTITY_ID_2));
+        assertEquals(1, manager.count());
+    }
+
+    @Test
+    void whenClearing_shouldRemoveAllEntities() {
+        // Given
+        manager.register(mockEntity1);
+        manager.register(mockEntity2);
+
+        // When
+        manager.clear();
+
+        // Then
+        assertEquals(0, manager.count());
+        assertFalse(manager.contain(ENTITY_ID_1));
+        assertFalse(manager.contain(ENTITY_ID_2));
+    }
 }
 

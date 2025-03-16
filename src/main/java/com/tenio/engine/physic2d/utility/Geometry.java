@@ -45,7 +45,7 @@ public final class Geometry {
    * @return the span type
    */
   public static SpanType getWhereIsPoint(Vector2 point, Vector2 pointOnPlane, Vector2 planeNormal) {
-    var temp = Vector2.newInstance().set(pointOnPlane).sub(point);
+    Vector2 temp = Vector2.newInstance().set(pointOnPlane).sub(point);
 
     float d = temp.getDotProductValue(planeNormal);
 
@@ -70,7 +70,7 @@ public final class Geometry {
   public static float getDistanceRayCircleIntersect(Vector2 rayOrigin, Vector2 rayHeading,
                                                     Vector2 circleOrigin,
                                                     float radius) {
-    var temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
+    Vector2 temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
 
     float length = temp.getLength();
     float v = temp.getDotProductValue(rayHeading);
@@ -97,7 +97,7 @@ public final class Geometry {
   public static boolean isRayCircleIntersect(Vector2 rayOrigin, Vector2 rayHeading,
                                              Vector2 circleOrigin,
                                              float radius) {
-    var temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
+    Vector2 temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
 
     float length = temp.getLength();
     float v = temp.getDotProductValue(rayHeading);
@@ -116,7 +116,7 @@ public final class Geometry {
    * @return <b>false</b> if vector is within the circle, <b>true</b> otherwise
    */
   public static float[] getTangentPoints(Vector2 center, float radius, Vector2 vector) {
-    var temp = Vector2.newInstance().set(vector).sub(center);
+    Vector2 temp = Vector2.newInstance().set(vector).sub(center);
 
     float sqrLen = temp.getLengthSqr();
     float rsqr = radius * radius;
@@ -148,6 +148,8 @@ public final class Geometry {
    * @return the distance point segment
    */
   public static float getDistancePointSegment(Vector2 vectorA, Vector2 vectorB, Vector2 vectorP) {
+    Vector2 temp = Vector2.newInstance().set(vectorB).sub(vectorA);
+
     // if the angle is obtuse between PA and AB is obtuse then the closest
     // vertex must be vectorA
     float dotA = (vectorP.x - vectorA.x) * (vectorB.x - vectorA.x)
@@ -168,11 +170,11 @@ public final class Geometry {
 
     // calculate the point along AB that is the closest to vectorP
     // Vector2D Point = vectorA + ((vectorB - vectorA) * dotA)/(dotA + dotB);
-    var temp =
+    var temp2 =
         Vector2.newInstance().set(vectorB).sub(vectorA).mul(dotA).div(dotA + dotB).add(vectorA);
 
     // calculate the distance vectorP-Point
-    return temp.getDistanceValue(vectorP);
+    return temp2.getDistanceValue(vectorP);
   }
 
   /**
@@ -186,6 +188,8 @@ public final class Geometry {
    */
   public static float getDistancePointSegmentSqr(Vector2 vectorA, Vector2 vectorB,
                                                  Vector2 vectorP) {
+    Vector2 temp = Vector2.newInstance().set(vectorB).sub(vectorA);
+
     // if the angle is obtuse between PA and AB is obtuse then the closest
     // vertex must be vectorA
     float dotA = (vectorP.x - vectorA.x) * (vectorB.x - vectorA.x)
@@ -206,11 +210,11 @@ public final class Geometry {
 
     // calculate the point along AB that is the closest to vectorP
     // Vector2D Point = vectorA + ((vectorB - vectorA) * dotA)/(dotA + dotB);
-    var temp =
+    var temp2 =
         Vector2.newInstance().set(vectorB).sub(vectorA).mul(dotA).div(dotA + dotB).add(vectorA);
 
     // calculate the distance vectorP-Point
-    return temp.getDistanceSqrValue(vectorP);
+    return temp2.getDistanceSqrValue(vectorP);
   }
 
   /**
@@ -531,7 +535,7 @@ public final class Geometry {
    * @return <b>true</b> if the point is within the radius of the circle, <b>false</b> otherwise
    */
   public static boolean isPointInCircle(Vector2 center, float radius, Vector2 point) {
-    var temp = Vector2.newInstance().set(point).sub(center);
+    Vector2 temp = Vector2.newInstance().set(point).sub(center);
     float distFromCenterSquared = temp.getLengthSqr();
 
     return distFromCenterSquared < (radius * radius);
@@ -572,12 +576,11 @@ public final class Geometry {
                                                              Vector2 vectorC,
                                                              float radius,
                                                              Vector2 intersectionPoint) {
-    var temp1 = Vector2.newInstance().set(vectorB).sub(vectorA).normalize();
-    var temp2 = Vector2.newInstance().set(temp1).perpendicular();
+    Vector2 temp1 = Vector2.newInstance().set(vectorB).sub(vectorA).normalize();
+    Vector2 temp2 = Vector2.newInstance().set(temp1).perpendicular();
 
-    // move the circle into the local space defined by the vector vectorB-vectorA with origin at
-    // vectorA
-    var localPos = Transformation.pointToLocalSpace(vectorC, temp1, temp2, vectorA);
+    // transform the circle's center into the coordinate space defined by the segment AB
+    Vector2 localPos = Transformation.pointToLocalSpace(vectorC, temp1, temp2, vectorA);
 
     boolean ipFound = false;
 
@@ -634,7 +637,7 @@ public final class Geometry {
   // positioned at posFirst facing in facingFirst
   public static boolean isSecondInFovoFirst(Vector2 posFirst, Vector2 facingFirst,
                                             Vector2 posSecond, float fov) {
-    var temp = Vector2.newInstance().set(posSecond).sub(posFirst).normalize();
+    Vector2 temp = Vector2.newInstance().set(posSecond).sub(posFirst).normalize();
     return facingFirst.getDotProductValue(temp) >= Math.cos(fov / 2);
   }
 

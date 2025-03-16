@@ -26,10 +26,10 @@ public final class Transformation {
                                                  Vector2 forward,
                                                  Vector2 side, Vector2 scale) {
     // copy the original vertices into the buffer about to be transformed
-    final var tranVector2Ds = clone(points);
+    final List<Vector2> tranVector2Ds = clone(points);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // scale
     if ((scale.x != 1) || (scale.y != 1)) {
@@ -62,10 +62,10 @@ public final class Transformation {
                                                  Vector2 forward,
                                                  Vector2 side) {
     // copy the original vertices into the buffer about to be transformed
-    var tranVector2Ds = clone(points);
+    List<Vector2> tranVector2Ds = clone(points);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // rotate
     matrix.rotate(forward, side);
@@ -91,10 +91,10 @@ public final class Transformation {
   public static Vector2 pointToWorldSpace(Vector2 point, Vector2 agentHeading, Vector2 agentSide,
                                           Vector2 agentPosition) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(point);
+    Vector2 temp = Vector2.newInstance().set(point);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // rotate
     matrix.rotate(agentHeading, agentSide);
@@ -119,10 +119,10 @@ public final class Transformation {
   public static Vector2 vectorToWorldSpace(Vector2 vector, Vector2 agentHeading,
                                            Vector2 agentSide) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(vector);
+    Vector2 temp = Vector2.newInstance().set(vector);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // rotate
     matrix.rotate(agentHeading, agentSide);
@@ -145,10 +145,10 @@ public final class Transformation {
   public static Vector2 pointToLocalSpace(Vector2 point, Vector2 agentHeading, Vector2 agentSide,
                                           Vector2 agentPosition) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(point);
+    Vector2 temp = Vector2.newInstance().set(point);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     float tx = -agentPosition.getDotProductValue(agentHeading);
     float ty = -agentPosition.getDotProductValue(agentSide);
@@ -178,10 +178,10 @@ public final class Transformation {
   public static Vector2 vectorToLocalSpace(Vector2 vector, Vector2 agentHeading,
                                            Vector2 agentSide) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(vector);
+    Vector2 temp = Vector2.newInstance().set(vector);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // create the transformation matrix
     matrix.p11(agentHeading.x);
@@ -204,10 +204,10 @@ public final class Transformation {
    */
   public static Vector2 vec2dRotateAroundOrigin(Vector2 vector, float angle) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(vector);
+    Vector2 temp = Vector2.newInstance().set(vector);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // rotate
     matrix.rotate(angle);
@@ -228,10 +228,10 @@ public final class Transformation {
    */
   public static Vector2 vec2dRotateAroundOrigin(float x, float y, float angle) {
     // make a copy of the point
-    var temp = Vector2.newInstance().set(x, y);
+    Vector2 temp = Vector2.newInstance().set(x, y);
 
     // create a transformation matrix
-    var matrix = Matrix3.newInstance();
+    Matrix3 matrix = Matrix3.newInstance();
 
     // rotate
     matrix.rotate(angle);
@@ -261,14 +261,16 @@ public final class Transformation {
     // this is the magnitude of the angle separating each whisker
     float sectorSize = fov / (float) (numWhiskers - 1);
 
-    var whiskers = new ArrayList<Vector2>(numWhiskers);
+    // create a vector that points away from the agent along the middle whisker
+    List<Vector2> whiskers = new ArrayList<Vector2>(numWhiskers);
+
     float angle = -fov * 0.5f;
 
-    for (int w = 0; w < numWhiskers; ++w) {
-      // create the whisker extending outwards at this angle
-      var temp2 = Vector2.newInstance().set(facing);
-      var temp = vec2dRotateAroundOrigin(temp2, angle);
-      var temp1 = Vector2.newInstance().set(temp).mul(whiskerLength).add(origin);
+    for (int i = 0; i < numWhiskers; ++i) {
+      Vector2 temp2 = Vector2.newInstance().set(facing);
+      Vector2 temp = vec2dRotateAroundOrigin(temp2, angle);
+      Vector2 temp1 = Vector2.newInstance().set(temp).mul(whiskerLength).add(origin);
+
       whiskers.add(temp1);
 
       angle += sectorSize;

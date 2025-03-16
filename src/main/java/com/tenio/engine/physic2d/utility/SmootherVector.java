@@ -3,6 +3,7 @@ package com.tenio.engine.physic2d.utility;
 import com.tenio.engine.physic2d.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Template class to help calculate the average value of a history of values.
@@ -30,13 +31,18 @@ public class SmootherVector<T extends Vector2> {
    * @param sampleSize the sample size
    * @param zeroValue  the zero value
    */
+  @SuppressWarnings("unchecked")
   public SmootherVector(int sampleSize, T zeroValue) {
-    histories = new ArrayList<>(sampleSize);
-    for (int i = 0; i < sampleSize; i++) {
-      histories.add(zeroValue);
-    }
+    histories = new ArrayList<T>(sampleSize);
     this.zeroValue = zeroValue;
     nextUpdateSlot = 0;
+
+    for (int i = 0; i < sampleSize; ++i) {
+      // ensure addition of a zero value
+      T zero = (T) zeroValue.clone();
+      zero.zero();
+      histories.add(zero);
+    }
   }
 
   /**
@@ -58,10 +64,10 @@ public class SmootherVector<T extends Vector2> {
     // now to calculate the average of the history list
     // c++ code make a copy here, I use Zero method instead.
     // Another approach could be creating public clone() method in Vector2D ...
-    var sum = zeroValue;
+    T sum = zeroValue;
     sum.zero();
 
-    var it = histories.listIterator();
+    ListIterator<T> it = histories.listIterator();
 
     while (it.hasNext()) {
       sum.add(it.next());

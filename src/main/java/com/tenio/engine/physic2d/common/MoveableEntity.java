@@ -133,7 +133,7 @@ public abstract class MoveableEntity extends BaseGameEntity {
     headingX = x;
     headingY = y;
     // the side vector must always be perpendicular to the heading
-    var temp = Vector2.newInstance().set(x, y).perpendicular();
+    Vector2 temp = Vector2.newInstance().set(x, y).perpendicular();
     sideX = temp.x;
     sideY = temp.y;
     // update the rotation
@@ -214,7 +214,7 @@ public abstract class MoveableEntity extends BaseGameEntity {
    */
   public boolean isRotatedHeadingToFacePosition(Vector2 target) {
     // get direction between 2 vectors
-    var temp = Vector2.newInstance().set(target).sub(getPosition()).normalize();
+    Vector2 temp = Vector2.newInstance().set(target).sub(getPosition()).normalize();
 
     // first determine the angle between the heading vector and the target
     float angle = (float) Math.acos(getHeading().getDotProductValue(temp));
@@ -234,7 +234,7 @@ public abstract class MoveableEntity extends BaseGameEntity {
 
     // The next few lines use a rotation matrix to rotate the player's heading
     // vector accordingly
-    var matrix3 = Matrix3.newInstance();
+    Matrix3 matrix3 = Matrix3.newInstance();
 
     // notice how the direction of rotation has to be determined when creating
     // the rotation matrix

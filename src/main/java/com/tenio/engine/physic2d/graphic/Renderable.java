@@ -25,14 +25,41 @@ THE SOFTWARE.
 package com.tenio.engine.physic2d.graphic;
 
 /**
- * This interface provides a method for rending objects to a screen.
+ * An interface that defines objects that can be rendered to a screen.
+ * Classes implementing this interface must provide a method to render themselves
+ * using a {@link Paint} instance.
+ * 
+ * <p>This interface is part of the graphics system and is typically implemented by
+ * game objects, UI elements, or any other visual components that need to be drawn
+ * to the screen.
+ * 
+ * <p>Example implementation:
+ * <pre>
+ * public class GameObject implements Renderable {
+ *     public void render(Paint paint) {
+ *         paint.setPenColor(Color.RED);
+ *         paint.drawCircle(x, y, radius);
+ *     }
+ * }
+ * </pre>
+ * 
+ * @see Paint
+ * @since 0.1.0
  */
 public interface Renderable {
 
   /**
-   * To render objects to screen.
+   * Renders this object to the screen using the provided Paint instance.
+   * Implementing classes should use the Paint methods to perform their
+   * specific rendering operations.
+   * 
+   * <p>The rendering context (graphics, colors, transformations) is managed by
+   * the Paint instance. Implementations should not make assumptions about the
+   * state of the Paint instance and should set any required properties
+   * (colors, fonts, etc.) before drawing.
    *
-   * @param paint see {@link Paint}
+   * @param paint the Paint instance to use for rendering operations
+   * @see Paint#startDrawing(java.awt.Graphics)
    */
   void render(Paint paint);
 }

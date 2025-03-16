@@ -27,66 +27,145 @@ package com.tenio.engine.physic2d.math;
 import com.tenio.common.utility.MathUtility;
 
 /**
- * A 2D Vector. Allows chaining methods by returning a reference to itself.
+ * A two-dimensional vector implementation that supports common vector operations.
+ * This class provides methods for vector arithmetic, normalization, dot product calculation,
+ * and other geometric operations. All methods return a reference to the vector itself to
+ * support method chaining.
+ * 
+ * <p>The coordinate system used assumes that:
+ * <ul>
+ *   <li>X-axis points to the right</li>
+ *   <li>Y-axis points down (in the graphics coordinate system)</li>
+ * </ul>
+ * 
+ * @since 0.1.0
+ * @see Matrix3
  */
 public class Vector2 {
 
+  /**
+   * Constant indicating clockwise rotation direction.
+   */
   public static final int CLOCK_WISE = 1;
+
+  /**
+   * Constant indicating counter-clockwise rotation direction.
+   */
   public static final int ANTI_CLOCK_WISE = -1;
 
+  /**
+   * The x-coordinate of this vector.
+   */
   public float x;
+
+  /**
+   * The y-coordinate of this vector.
+   */
   public float y;
 
+  /**
+   * Private constructor to enforce factory method usage.
+   * Initializes the vector to zero.
+   */
   private Vector2() {
     zero();
   }
 
+  /**
+   * Creates a new zero vector.
+   *
+   * @return a new Vector2 instance initialized to (0,0)
+   */
   public static Vector2 newInstance() {
     return new Vector2();
   }
 
+  /**
+   * Creates a new vector with the specified coordinates.
+   *
+   * @param a the x-coordinate
+   * @param b the y-coordinate
+   * @return a new Vector2 instance with the specified coordinates
+   */
   public static Vector2 valueOf(float a, float b) {
     return newInstance().set(a, b);
   }
 
+  /**
+   * Creates a new vector as a copy of the given vector.
+   *
+   * @param vector the vector to copy
+   * @return a new Vector2 instance with the same coordinates as the input vector
+   */
   public static Vector2 valueOf(Vector2 vector) {
     return newInstance().set(vector);
   }
 
+  /**
+   * Sets this vector's coordinates to match those of another vector.
+   *
+   * @param vector the vector whose coordinates to copy
+   * @return this vector for chaining
+   */
   public Vector2 set(Vector2 vector) {
     return set(vector.x, vector.y);
   }
 
+  /**
+   * Sets this vector's coordinates to the specified values.
+   *
+   * @param a the new x-coordinate
+   * @param b the new y-coordinate
+   * @return this vector for chaining
+   */
   public Vector2 set(float a, float b) {
     x = a;
     y = b;
-
     return this;
   }
 
+  /**
+   * Creates a new vector with the same coordinates as this one.
+   *
+   * @return a new Vector2 instance with the same coordinates
+   */
   @Override
   public Vector2 clone() {
     return valueOf(this);
   }
 
+  /**
+   * Sets this vector's coordinates to zero (0,0).
+   *
+   * @return this vector for chaining
+   */
   public Vector2 zero() {
     return set(0, 0);
   }
 
-  // returns true if both x and y are zero
+  /**
+   * Checks if this vector has zero magnitude.
+   *
+   * @return true if both x and y coordinates are zero, false otherwise
+   */
   public boolean isZero() {
     return x == 0 && y == 0;
   }
 
   /**
-   * @return the length of a 2D vector
+   * Calculates the length (magnitude) of this vector.
+   *
+   * @return the length of the vector
    */
   public float getLength() {
     return (float) Math.sqrt(getLengthSqr());
   }
 
   /**
-   * @return the squared length of the vector (thereby avoiding the sqrt)
+   * Calculates the squared length of this vector.
+   * This is faster than {@link #getLength()} as it avoids the square root calculation.
+   *
+   * @return the squared length of the vector
    */
   public float getLengthSqr() {
     return (x * x + y * y);
@@ -100,8 +179,8 @@ public class Vector2 {
    * "https://www.stdio.vn/articles/vector-va-ung-dung-cua-chung-45">vector</a>
    * <br>
    * <p>
-   * Normalizing refers to the process of making something “standard” or, well,
-   * “normal.” In the case of vectors, let’s assume for the moment that a standard
+   * Normalizing refers to the process of making something "standard" or, well,
+   * "normal." In the case of vectors, let's assume for the moment that a standard
    * vector has a length of 1. To normalize a vector, therefore, is to take a
    * vector of any length and, keeping it pointing in the same direction, change
    * its length to 1, turning it into what is called a unit vector.

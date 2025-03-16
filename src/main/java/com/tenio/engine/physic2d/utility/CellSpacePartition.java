@@ -155,7 +155,7 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
     neighbors.clear();
 
     // create the query box that is the bounding box of the target's query area
-    var temp = Vector2.newInstance().set(targetPos).sub(queryRadius, queryRadius);
+    Vector2 temp = Vector2.newInstance().set(targetPos).sub(queryRadius, queryRadius);
     aabbBox2D.setLeft(temp.x);
     aabbBox2D.setTop(temp.y);
     temp.set(targetPos).add(queryRadius, queryRadius);
@@ -165,15 +165,15 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
     // iterate through each cell and test to see if its bounding box overlaps
     // with the query box. If it does, and it also contains entities then
     // make further proximity tests.
-    var cellListIterator = cells.listIterator();
+    ListIterator<Cell<T>> cellListIterator = cells.listIterator();
     while (cellListIterator.hasNext()) {
-      var curCell = cellListIterator.next();
+      Cell<T> curCell = cellListIterator.next();
       // test to see if this cell contains members and if it overlaps the
       // query box
       if (curCell.bbox.isOverlappedWith(aabbBox2D) && !curCell.members.isEmpty()) {
 
         // add any entities found within query radius to the neighbor list
-        var it = curCell.members.listIterator();
+        ListIterator<T> it = curCell.members.listIterator();
         while (it.hasNext()) {
           T ent = it.next();
           if (temp.set(ent.getPosition()).getDistanceSqrValue(targetPos)
@@ -182,7 +182,9 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
           }
         }
       }
-    } // next cell
+    }
+
+    currNeighbor = neighbors.listIterator();
   }
 
   /**
@@ -191,7 +193,6 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
    * @return a reference to the entity at the front of the neighbor vector
    */
   public T getFrontOfNeighbor() {
-    currNeighbor = neighbors.listIterator();
     if (!currNeighbor.hasNext()) {
       return null;
     }
@@ -223,7 +224,7 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
    * Clears the cells of all entities.
    */
   public void clearCells() {
-    var it = cells.listIterator();
+    ListIterator<Cell<T>> it = cells.listIterator();
     while (it.hasNext()) {
       it.next().members.clear();
     }
@@ -231,7 +232,8 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
 
   @Override
   public void render(Paint paint) {
-    var curCell = cells.listIterator();
+    // draw the cell edges
+    ListIterator<Cell<T>> curCell = cells.listIterator();
     while (curCell.hasNext()) {
       curCell.next().bbox.render(paint);
     }
