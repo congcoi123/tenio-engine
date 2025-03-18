@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.basis.implement;
 
+import com.tenio.engine.ecs.basis.Component;
 import java.util.Arrays;
 
 /**
@@ -51,6 +52,18 @@ public final class ContextInfo {
   /**
    * Initialization.
    *
+   * @param initialSize the initial size of components array
+   */
+  public ContextInfo(int initialSize) {
+    this.name = "Default";
+    this.componentNames = new String[initialSize];
+    this.componentTypes = new Class<?>[initialSize];
+    this.numberComponents = initialSize;
+  }
+
+  /**
+   * Initialization.
+   *
    * @param name             the context's name
    * @param componentNames   list of component's names
    * @param componentTypes   list of component's types
@@ -64,20 +77,63 @@ public final class ContextInfo {
     this.numberComponents = numberComponents;
   }
 
+  /**
+   * Gets the name of the context.
+   *
+   * @return the context name
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Gets the array of component names.
+   *
+   * @return array of component names
+   */
   public String[] getComponentNames() {
     return componentNames;
   }
 
+  /**
+   * Gets the array of component types.
+   *
+   * @return array of component class types
+   */
   public Class<?>[] getComponentTypes() {
     return componentTypes;
   }
 
+  /**
+   * Gets the total number of components.
+   *
+   * @return the number of components
+   */
   public int getNumberComponents() {
     return numberComponents;
+  }
+
+  /**
+   * Gets the index for a component type.
+   *
+   * @param componentClass the component class to get index for
+   * @return the index of the component type
+   */
+  public int getComponentIndex(Class<? extends Component> componentClass) {
+    for (int i = 0; i < componentTypes.length; i++) {
+      if (componentTypes[i] != null && componentTypes[i].equals(componentClass)) {
+        return i;
+      }
+    }
+    // If not found, assign to first empty slot
+    for (int i = 0; i < componentTypes.length; i++) {
+      if (componentTypes[i] == null) {
+        componentTypes[i] = componentClass;
+        componentNames[i] = componentClass.getSimpleName();
+        return i;
+      }
+    }
+    throw new IllegalStateException("No space available for new component type: " + componentClass.getName());
   }
 
   @Override

@@ -3,7 +3,6 @@ package com.tenio.engine.physic2d.utility;
 import com.tenio.engine.physic2d.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Template class to help calculate the average value of a history of values.
@@ -12,68 +11,41 @@ import java.util.ListIterator;
  * <br>
  * Example: Used to smooth frame rate calculations.
  */
-public class SmootherVector<T extends Vector2> {
+public final class SmootherVector {
   /**
    * This holds the history.
    */
-  private final List<T> histories;
-  /**
-   * An example of the 'zero' value of the type to be smoothed. This would be
-   * something like Vector2D(0,0).
-   */
-  private final T zeroValue;
-  private int nextUpdateSlot;
+  private final List<Vector2> history;
+  private final int sampleSize;
 
   /**
-   * To instantiate a Smoother, pass it the number of samples you want to use in the smoothing,
-   * and an example of a 'zero' type.
+   * Creates a new vector smoother.
    *
-   * @param sampleSize the sample size
-   * @param zeroValue  the zero value
+   * @param sampleSize the number of samples to use for smoothing
    */
-  @SuppressWarnings("unchecked")
-  public SmootherVector(int sampleSize, T zeroValue) {
-    histories = new ArrayList<T>(sampleSize);
-    this.zeroValue = zeroValue;
-    nextUpdateSlot = 0;
-
-    for (int i = 0; i < sampleSize; ++i) {
-      // ensure addition of a zero value
-      T zero = (T) zeroValue.clone();
-      zero.zero();
-      histories.add(zero);
-    }
+  public SmootherVector(int sampleSize) {
+    this.sampleSize = sampleSize;
+    history = new ArrayList<>(sampleSize);
   }
 
   /**
-   * Each time you want to get a new average, feed it the most recent value and
-   * this method will return an average over the last SampleSize updates.
+   * Updates the smoother with a new sample.
    *
-   * @param mostRecentValue the most recent value
-   * @return an average over the last SampleSize updates
+   * @param mostRecentValue the new value to add
+   * @return the smoothed value
    */
-  public T update(T mostRecentValue) {
-    // overwrite the oldest value with the newest
-    histories.set(nextUpdateSlot++, mostRecentValue);
-
-    // make sure m_iNextUpdateSlot wraps around.
-    if (nextUpdateSlot == histories.size()) {
-      nextUpdateSlot = 0;
+  public Vector2 update(Vector2 mostRecentValue) {
+    history.add(mostRecentValue.clone());
+    if (history.size() > sampleSize) {
+      history.remove(0);
     }
 
-    // now to calculate the average of the history list
-    // c++ code make a copy here, I use Zero method instead.
-    // Another approach could be creating public clone() method in Vector2D ...
-    T sum = zeroValue;
-    sum.zero();
-
-    ListIterator<T> it = histories.listIterator();
-
-    while (it.hasNext()) {
-      sum.add(it.next());
+    Vector2 sum = new Vector2();
+    for (Vector2 value : history) {
+      sum.add(value);
     }
+    sum.div(history.size());
 
-    sum.div(histories.size());
     return sum;
   }
 }

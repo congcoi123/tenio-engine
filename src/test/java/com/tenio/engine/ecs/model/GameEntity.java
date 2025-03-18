@@ -26,6 +26,10 @@ package com.tenio.engine.ecs.model;
 
 import com.tenio.engine.ecs.basis.implement.EntityImpl;
 import com.tenio.engine.ecs.model.component.Position;
+import com.tenio.engine.ecs.model.component.Animation;
+import com.tenio.engine.ecs.model.component.Motion;
+import com.tenio.engine.ecs.model.component.View;
+import com.tenio.engine.ecs.pool.ComponentPool;
 
 public final class GameEntity extends EntityImpl {
 
@@ -33,12 +37,13 @@ public final class GameEntity extends EntityImpl {
     return hasComponent(GameComponent.ANIMATION);
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity setAnimation(boolean value) {
     if (value != hasComponent(GameComponent.ANIMATION)) {
       if (value) {
-        setComponent(GameComponent.ANIMATION, getComponentPools()[GameComponent.ANIMATION].get());
+        setComponent(GameComponent.ANIMATION, ((ComponentPool<Animation>)getComponentPools().get(Animation.class)).get());
       } else {
-        getComponentPools()[GameComponent.ANIMATION].repay(getComponent(GameComponent.ANIMATION));
+        ((ComponentPool<Animation>)getComponentPools().get(Animation.class)).repay((Animation)getComponent(GameComponent.ANIMATION));
         removeComponent(GameComponent.ANIMATION);
       }
     }
@@ -49,12 +54,13 @@ public final class GameEntity extends EntityImpl {
     return hasComponent(GameComponent.MOTION);
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity setMotion(boolean value) {
     if (value != hasComponent(GameComponent.MOTION)) {
       if (value) {
-        setComponent(GameComponent.MOTION, getComponentPools()[GameComponent.MOTION].get());
+        setComponent(GameComponent.MOTION, ((ComponentPool<Motion>)getComponentPools().get(Motion.class)).get());
       } else {
-        getComponentPools()[GameComponent.MOTION].repay(getComponent(GameComponent.MOTION));
+        ((ComponentPool<Motion>)getComponentPools().get(Motion.class)).repay((Motion)getComponent(GameComponent.MOTION));
         removeComponent(GameComponent.MOTION);
       }
     }
@@ -65,12 +71,13 @@ public final class GameEntity extends EntityImpl {
     return hasComponent(GameComponent.VIEW);
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity setView(boolean value) {
     if (value != hasComponent(GameComponent.VIEW)) {
       if (value) {
-        setComponent(GameComponent.VIEW, getComponentPools()[GameComponent.VIEW].get());
+        setComponent(GameComponent.VIEW, ((ComponentPool<View>)getComponentPools().get(View.class)).get());
       } else {
-        getComponentPools()[GameComponent.VIEW].repay(getComponent(GameComponent.VIEW));
+        ((ComponentPool<View>)getComponentPools().get(View.class)).repay((View)getComponent(GameComponent.VIEW));
         removeComponent(GameComponent.VIEW);
       }
     }
@@ -81,24 +88,27 @@ public final class GameEntity extends EntityImpl {
     return hasComponent(GameComponent.POSITION);
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity setPosition(float x, float y) {
-    var component = (Position) getComponentPools()[GameComponent.POSITION].get();
+    var component = ((ComponentPool<Position>)getComponentPools().get(Position.class)).get();
     component.x = x;
     component.y = y;
     setComponent(GameComponent.POSITION, component);
     return this;
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity replacePosition(float x, float y) {
-    var component = (Position) getComponentPools()[GameComponent.POSITION].get();
+    var component = ((ComponentPool<Position>)getComponentPools().get(Position.class)).get();
     component.x = x;
     component.y = y;
     replaceComponent(GameComponent.POSITION, component);
     return this;
   }
 
+  @SuppressWarnings("unchecked")
   public GameEntity removePosition() {
-    getComponentPools()[GameComponent.POSITION].repay(getComponent(GameComponent.POSITION));
+    ((ComponentPool<Position>)getComponentPools().get(Position.class)).repay((Position)getComponent(GameComponent.POSITION));
     removeComponent(GameComponent.POSITION);
     return this;
   }

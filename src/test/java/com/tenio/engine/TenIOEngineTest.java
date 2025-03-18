@@ -34,8 +34,10 @@ import org.junit.runner.RunWith;
 @SuiteDisplayName("Test all unit test cases for tenio-engine module")
 @SelectPackages({
     "com.tenio.engine.ecs",
+    "com.tenio.engine.exception",
     "com.tenio.engine.fsm",
     "com.tenio.engine.heartbeat",
+    "com.tenio.engine.message",
     "com.tenio.engine.physic2d"
 })
 class TenIOEngineTest {

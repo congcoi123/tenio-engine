@@ -1,7 +1,6 @@
 package com.tenio.engine.ecs.system.implement;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import com.tenio.engine.ecs.basis.Context;
 import com.tenio.engine.ecs.basis.Entity;

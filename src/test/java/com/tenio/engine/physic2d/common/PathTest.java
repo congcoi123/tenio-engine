@@ -28,7 +28,7 @@ class PathTest {
     List<Vector2> wayPoints = actualPath.getWayPoints();
     assertEquals(10, wayPoints.size());
     Vector2 currentWayPoint = actualPath.getCurrentWayPoint();
-    assertEquals(10.0f, currentWayPoint.y);
+    assertEquals(10.0f, currentWayPoint.getY());
     assertFalse(currentWayPoint.isZero());
     assertFalse(wayPoints.get(7).isZero());
     assertFalse(wayPoints.get(2).isZero());
@@ -53,7 +53,7 @@ class PathTest {
     List<Vector2> wayPoints = actualPath.getWayPoints();
     assertEquals(10, wayPoints.size());
     Vector2 currentWayPoint = actualPath.getCurrentWayPoint();
-    assertEquals(10.0f, currentWayPoint.y);
+    assertEquals(10.0f, currentWayPoint.getY());
     assertFalse(currentWayPoint.isZero());
     assertFalse(wayPoints.get(7).isZero());
     assertFalse(wayPoints.get(2).isZero());
@@ -70,13 +70,6 @@ class PathTest {
 
   @Test
   void testSetToNextWayPoint() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by setToNextWayPoint()
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
-
     (new Path(10, 10.0f, 10.0f, 10.0f, 10.0f, true)).setToNextWayPoint();
   }
 
@@ -93,7 +86,7 @@ class PathTest {
     Path path = new Path(1, 10.0f, 10.0f, 10.0f, 10.0f, true);
     path.setToNextWayPoint();
     assertTrue(path.isEndOfWayPoints());
-    assertEquals(10.0f, path.getCurrentWayPoint().y);
+    assertEquals(10.0f, path.getCurrentWayPoint().getY());
   }
 
   @Test
@@ -102,7 +95,7 @@ class PathTest {
     path.setToNextWayPoint();
     assertTrue(path.isEndOfWayPoints());
     assertEquals(1, path.getWayPoints().size());
-    assertEquals(10.0f, path.getCurrentWayPoint().y);
+    assertEquals(10.0f, path.getCurrentWayPoint().getY());
   }
 
   @Test
@@ -121,7 +114,7 @@ class PathTest {
     Vector2 getResult6 = actualCreateRandomPathResult.get(7);
     Vector2 getResult7 = actualCreateRandomPathResult.get(8);
     Vector2 getResult8 = actualCreateRandomPathResult.get(9);
-    float actualResultFloat = getResult5.y;
+    float actualResultFloat = getResult5.getY();
     assertEquals(9.999999f, actualResultFloat);
     assertFalse(actualCreateRandomPathResult.get(6).isZero());
     assertFalse(getResult5.isZero());
@@ -133,7 +126,7 @@ class PathTest {
     assertFalse(getResult1.isZero());
     assertFalse(getResult8.isZero());
     assertFalse(getResult.isZero());
-    assertEquals(10.0f, getResult.y);
+    assertEquals(10.0f, getResult.getY());
     assertSame(getResult, path.getCurrentWayPoint());
     assertFalse(path.isEndOfWayPoints());
   }
@@ -162,7 +155,7 @@ class PathTest {
     assertFalse(actualCreateRandomPathResult.get(9).isZero());
     Vector2 getResult = actualCreateRandomPathResult.get(0);
     assertFalse(getResult.isZero());
-    assertEquals(10.0f, getResult.y);
+    assertEquals(10.0f, getResult.getY());
     assertSame(getResult, path.getCurrentWayPoint());
     assertFalse(path.isEndOfWayPoints());
   }

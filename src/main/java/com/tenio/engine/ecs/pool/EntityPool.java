@@ -24,143 +24,241 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.pool;
 
-import com.tenio.common.constant.CommonConstant;
 import com.tenio.common.exception.NullElementPoolException;
 import com.tenio.common.logger.SystemLogger;
 import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.Entity;
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
-import com.tenio.engine.ecs.basis.implement.EntityImpl;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * The object pool mechanism for {@link Entity}.
+ * The EntityPool class manages a pool of reusable entities in the Entity Component
+ * System (ECS). It provides efficient memory management by recycling entity
+ * instances instead of creating new ones.
+ *
+ * <p>
+ * Features:
+ * - Entity instance pooling
+ * - Automatic pool expansion
+ * - Memory optimization
+ * - Type-safe entity management
+ * </p>
+ *
+ * <p>
+ * The pool system supports:
+ * - Dynamic pool sizing
+ * - Entity recycling
+ * - Memory efficiency
+ * - Performance optimization
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * {@code
+ * // Create a pool for game entities
+ * EntityPool<Entity> pool = new EntityPool<>(
+ *     Entity.class,
+ *     100  // Initial capacity
+ * );
+ * 
+ * // Get an entity from the pool
+ * Entity entity = pool.get();
+ * entity.setId("entity1");
+ * 
+ * // Return entity to the pool when done
+ * pool.repay(entity);
+ * 
+ * // Create multiple entities
+ * List<Entity> entities = pool.getAll(10);
+ * 
+ * // Return multiple entities
+ * pool.repayAll(entities);
+ * }
+ * </p>
+ *
+ * @param <T> the type of entity managed by this pool
+ * @see com.tenio.engine.ecs.basis.Entity
+ * @since 0.5.0
  */
-public final class EntityPool extends SystemLogger implements ElementPool<Entity> {
+public final class EntityPool<T extends Entity> extends SystemLogger implements ElementPool<T> {
 
-  private final Class<? extends EntityImpl> clazz;
+  private final Class<T> entityClass;
   private final ContextInfo contextInfo;
   @GuardedBy("this")
-  private Entity[] pool;
+  private List<T> availableEntities;
   @GuardedBy("this")
-  private boolean[] used;
+  private List<T> usedEntities;
 
   /**
-   * Initialization.
+   * Creates a new entity pool with the specified initial capacity.
    *
-   * @param clazz       the class of element
-   * @param contextInfo the context information
+   * @param entityClass the class of entities to manage
+   * @param initialSize the initial size of the pool
    */
-  public EntityPool(Class<? extends EntityImpl> clazz, ContextInfo contextInfo) {
-    this.clazz = clazz;
-    this.contextInfo = contextInfo;
-    pool = new Entity[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
-    used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+  public EntityPool(Class<T> entityClass, int initialSize) {
+    this.entityClass = entityClass;
+    this.contextInfo = null;
+    this.availableEntities = new ArrayList<>(initialSize);
+    this.usedEntities = new ArrayList<>(initialSize);
 
-    for (int i = 0; i < pool.length; i++) {
+    // Initialize the pool with entities
+    for (int i = 0; i < initialSize; i++) {
       try {
-        var entity = this.clazz.getDeclaredConstructor().newInstance();
-        entity.setId(UUID.randomUUID().toString());
-        entity.setContextInfo(this.contextInfo);
-        pool[i] = entity;
-        used[i] = false;
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException | NoSuchMethodException | SecurityException exception) {
-        if (isErrorEnabled()) {
-          error(exception);
-        }
-      }
-    }
-  }
-
-  @Override
-  public synchronized Entity get() {
-    for (int i = 0; i < used.length; i++) {
-      if (!used[i]) {
-        used[i] = true;
-        return pool[i];
-      }
-    }
-    // If we got here, then all the Elements are in use. We will
-    // increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
-    // illustration purposes).
-    var oldUsed = used;
-    used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-    System.arraycopy(oldUsed, 0, used, 0, oldUsed.length);
-
-    var oldPool = pool;
-    pool = new Entity[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-    System.arraycopy(oldPool, 0, pool, 0, oldPool.length);
-
-    for (int i = oldPool.length; i < pool.length; i++) {
-      try {
-        var entity = clazz.getDeclaredConstructor().newInstance();
+        T entity = entityClass.getDeclaredConstructor().newInstance();
         entity.setId(UUID.randomUUID().toString());
         entity.setContextInfo(contextInfo);
-        pool[i] = entity;
-        used[i] = false;
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException | NoSuchMethodException | SecurityException exception) {
-        if (isErrorEnabled()) {
-          error(exception);
-        }
+        availableEntities.add(entity);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create entity instance", e);
       }
     }
-
-    if (isInfoEnabled()) {
-      info("COMPONENT POOL", buildgen("Increase the number of elements by ",
-          CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", used.length));
-    }
-
-    // and allocate the last old ELement
-    used[oldPool.length - 1] = true;
-    return pool[oldPool.length - 1];
   }
 
+  /**
+   * Gets an entity from the pool. If no entities are available,
+   * the pool will automatically expand.
+   *
+   * @return an entity instance
+   */
   @Override
-  public synchronized void repay(Entity element) {
+  public synchronized T get() {
+    if (availableEntities.isEmpty()) {
+      expandPool();
+    }
+    T entity = availableEntities.remove(availableEntities.size() - 1);
+    usedEntities.add(entity);
+    return entity;
+  }
+
+  /**
+   * Gets multiple entities from the pool.
+   *
+   * @param count the number of entities to get
+   * @return a list of entity instances
+   */
+  public List<T> getAll(int count) {
+    List<T> entities = new ArrayList<>(count);
+    for (int i = 0; i < count; i++) {
+      entities.add(get());
+    }
+    return entities;
+  }
+
+  /**
+   * Returns an entity to the pool.
+   *
+   * @param entity the entity to return
+   */
+  @Override
+  public synchronized void repay(T entity) {
+    if (entity == null) {
+      throw new NullElementPoolException("Cannot repay null entity");
+    }
+    
     boolean flagFound = false;
-    for (int i = 0; i < pool.length; i++) {
-      if (pool[i] == element) {
-        used[i] = false;
-        element.reset();
+    for (int i = 0; i < availableEntities.size(); i++) {
+      if (availableEntities.get(i) == entity) {
+        availableEntities.remove(i);
+        entity.reset();
+        entity.setId(UUID.randomUUID().toString()); // Reset ID to a new value
         flagFound = true;
         break;
       }
     }
     if (!flagFound) {
-      var exception = new NullElementPoolException(element.toString());
-      if (isErrorEnabled()) {
-        error(exception);
+      throw new NullElementPoolException("Entity not found in pool");
+    }
+  }
+
+  /**
+   * Returns multiple entities to the pool.
+   *
+   * @param entities the entities to return
+   */
+  public void repayAll(List<T> entities) {
+    for (T entity : entities) {
+      repay(entity);
+    }
+  }
+
+  /**
+   * Gets the number of available entities in the pool.
+   *
+   * @return the number of available entities
+   */
+  @Override
+  public synchronized int getPoolSize() {
+    return availableEntities.size() + usedEntities.size();
+  }
+
+  /**
+   * Gets the number of available entities in the pool.
+   *
+   * @return the number of available entities
+   */
+  public int getAvailableCount() {
+    return availableEntities.size();
+  }
+
+  /**
+   * Gets the number of entities currently in use.
+   *
+   * @return the number of used entities
+   */
+  public int getUsedCount() {
+    return usedEntities.size();
+  }
+
+  /**
+   * Expands the pool by creating new entity instances.
+   */
+  private void expandPool() {
+    int currentSize = availableEntities.size() + usedEntities.size();
+    int expansionSize = Math.max(10, currentSize / 2);
+
+    for (int i = 0; i < expansionSize; i++) {
+      try {
+        T entity = entityClass.getDeclaredConstructor().newInstance();
+        entity.setId(UUID.randomUUID().toString());
+        entity.setContextInfo(contextInfo);
+        availableEntities.add(entity);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create entity instance", e);
       }
-      throw exception;
+    }
+
+    if (isInfoEnabled()) {
+      info("COMPONENT POOL", buildgen("Increase the number of elements by ",
+          expansionSize, " to ", getPoolSize()));
     }
   }
 
   @Override
   public synchronized void cleanup() {
-    Arrays.fill(pool, null);
-    used = null;
-    pool = null;
-  }
+    // Reset to initial size
+    availableEntities.clear();
+    usedEntities.clear();
 
-  @Override
-  public synchronized int getPoolSize() {
-    return (pool.length == used.length) ? pool.length : -1;
+    // Reinitialize all entities
+    for (int i = 0; i < getPoolSize(); i++) {
+      try {
+        T entity = entityClass.getDeclaredConstructor().newInstance();
+        entity.setId(UUID.randomUUID().toString());
+        entity.setContextInfo(contextInfo);
+        availableEntities.add(entity);
+      } catch (Exception e) {
+        if (isErrorEnabled()) {
+          error(e);
+        }
+      }
+    }
   }
 
   @Override
   public int getAvailableSlot() {
-    int slot = 0;
-    for (boolean b : used) {
-      if (!b) {
-        slot++;
-      }
-    }
-
-    return slot;
+    return availableEntities.size();
   }
 }

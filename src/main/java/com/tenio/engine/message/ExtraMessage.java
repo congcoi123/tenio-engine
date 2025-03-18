@@ -24,18 +24,91 @@ THE SOFTWARE.
 
 package com.tenio.engine.message;
 
-import java.util.Map;
-
 /**
- * The extra message.
+ * The ExtraMessage interface represents additional data that can be attached to messages
+ * sent between entities in the game engine. This class provides a flexible way to
+ * include various types of data with messages, such as game state information,
+ * entity properties, or action parameters.
+ *
+ * <p>
+ * Features:
+ * - Generic data storage
+ * - Type-safe data retrieval
+ * - Support for multiple data types
+ * - Null-safe operations
+ * </p>
+ *
+ * <p>
+ * The class supports:
+ * - Custom data payloads
+ * - Message-specific information
+ * - Entity state data
+ * - Action parameters
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * {@code
+ * // Create a message with damage information
+ * ExtraMessage attackData = new ExtraMessage();
+ * attackData.setValue("damage", 50);
+ * attackData.setValue("type", "fire");
+ * 
+ * // Create a message with position data
+ * ExtraMessage moveData = new ExtraMessage();
+ * moveData.setValue("x", 100.0f);
+ * moveData.setValue("y", 200.0f);
+ * moveData.setValue("speed", 5.0f);
+ * 
+ * // Retrieve data
+ * int damage = attackData.getValue("damage", Integer.class);
+ * String type = attackData.getValue("type", String.class);
+ * float x = moveData.getValue("x", Float.class);
+ * }
+ * </p>
+ *
+ * @see com.tenio.engine.message.MessageDispatcher
+ * @see com.tenio.engine.fsm.entity.Telegram
+ * @since 0.5.0
  */
 public interface ExtraMessage {
 
-  long getTimestamp();
+  /**
+   * Sets a value in the message.
+   *
+   * @param key   the key to store the value under
+   * @param value the value to store
+   */
+  void setValue(String key, Object value);
 
-  void putContent(String key, Object value);
+  /**
+   * Retrieves a value from the message.
+   *
+   * @param <T>   the type of value to retrieve
+   * @param key   the key of the value to retrieve
+   * @param clazz the class of the value type
+   * @return the value if found and of the correct type, null otherwise
+   */
+  <T> T getValue(String key, Class<T> clazz);
 
-  Map<String, Object> getContent();
+  /**
+   * Checks if a key exists in the message.
+   *
+   * @param key the key to check
+   * @return true if the key exists, false otherwise
+   */
+  boolean containsKey(String key);
 
-  Object getContentByKey(String key);
+  /**
+   * Removes a value from the message.
+   *
+   * @param key the key of the value to remove
+   */
+  void removeValue(String key);
+
+  /**
+   * Clears all values from the message.
+   */
+  void clear();
+
 }

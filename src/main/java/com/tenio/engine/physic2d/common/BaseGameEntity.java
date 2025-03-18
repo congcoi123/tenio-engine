@@ -100,13 +100,29 @@ public abstract class BaseGameEntity extends AbstractEntity {
     return position.set(positionX, positionY);
   }
 
-  public void setPosition(Vector2 position) {
-    setPosition(position.x, position.y);
+  /**
+   * Sets the entity's position using a Vector2 object.
+   *
+   * @param newPosition the new position vector
+   */
+  public void setPosition(Vector2 newPosition) {
+    positionX = newPosition.getX();
+    positionY = newPosition.getY();
+    position.setX(positionX);
+    position.setY(positionY);
   }
 
+  /**
+   * Sets the entity's position using x and y coordinates.
+   *
+   * @param x the x coordinate
+   * @param y the y coordinate
+   */
   public void setPosition(float x, float y) {
     positionX = x;
     positionY = y;
+    position.setX(x);
+    position.setY(y);
   }
 
   public float getScaleX() {
@@ -122,7 +138,7 @@ public abstract class BaseGameEntity extends AbstractEntity {
   }
 
   public void setScale(Vector2 scale) {
-    setScale(scale.x, scale.y);
+    setScale(scale.getX(), scale.getY());
   }
 
   /**

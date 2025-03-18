@@ -29,11 +29,56 @@ import com.tenio.engine.message.ExtraMessage;
 import java.util.UUID;
 
 /**
- * The message which is used for communication between one heart-beat and
- * outside.
+ * The HeartBeatMessage class represents messages that can be sent between
+ * heartbeat components in the game engine. These messages allow for communication
+ * and synchronization between different update loops and game systems.
+ * <p>
+ * Features:
+ * - Message type identification
+ * - Message payload support
+ * - Heartbeat synchronization
+ * - System communication
+ * <p>
+ * The message system supports:
+ * - Inter-heartbeat communication
+ * - Update cycle synchronization
+ * - State change notifications
+ * - Performance metrics
+ * <p>
+ * Example usage:
+ * <pre>
+ * // Create a message to pause physics updates
+ * HeartBeatMessage pauseMessage = new HeartBeatMessage(
+ *     MessageType.PAUSE,
+ *     "physics",
+ *     System.currentTimeMillis()
+ * );
+ * 
+ * // Create a message with performance data
+ * HeartBeatMessage performanceMessage = new HeartBeatMessage(
+ *     MessageType.PERFORMANCE_UPDATE,
+ *     "main",
+ *     new PerformanceData(fps, frameTime)
+ * );
+ * 
+ * // Handle received message
+ * public void onMessage(HeartBeatMessage message) {
+ *     switch (message.getType()) {
+ *         case PAUSE:
+ *             pauseSystem(message.getTarget());
+ *             break;
+ *         case PERFORMANCE_UPDATE:
+ *             updateMetrics(message.getData());
+ *             break;
+ *     }
+ * }
+ * </pre>
+ *
+ * @see AbstractHeartBeat
+ * @see HeartBeatManager
+ * @since 0.5.0
  */
-@SuppressWarnings("rawtypes")
-final class HeartbeatMessage implements Comparable {
+public final class HeartbeatMessage implements Comparable<HeartbeatMessage> {
 
   /**
    * These messages will be stored in a priority queue. Therefore the operator
@@ -123,14 +168,8 @@ final class HeartbeatMessage implements Comparable {
   }
 
   @Override
-  public int compareTo(Object o2) {
-    var t1 = this;
-    var t2 = (HeartbeatMessage) o2;
-    if (t1 == t2) {
-      return 0;
-    } else {
-      return (t1.getDelayTime() > t2.getDelayTime()) ? -1 : 1;
-    }
+  public int compareTo(HeartbeatMessage other) {
+    return Double.compare(delayTime, other.delayTime);
   }
 
   @Override

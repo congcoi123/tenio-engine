@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.basis;
 
-import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
 import com.tenio.engine.ecs.pool.ComponentPool;
+import java.util.Map;
 
 /**
  * An entity is something that exists in your game world. Again, an entity is
@@ -56,7 +56,7 @@ public interface Entity {
    *
    * @return an array of {@link ComponentPool}
    */
-  ElementPool<Component>[] getComponentPools();
+  Map<Class<? extends Component>, ComponentPool<? extends Component>> getComponentPools();
 
   /**
    * Set list of component pools, each component pool manages specific component
@@ -64,7 +64,7 @@ public interface Entity {
    *
    * @param componentPools an array of {@link ComponentPool}
    */
-  void setComponentPools(ElementPool<Component>[] componentPools);
+  void setComponentPools(Map<Class<? extends Component>, ComponentPool<? extends Component>> componentPools);
 
   /**
    * Retrieves the context information.
@@ -151,4 +151,6 @@ public interface Entity {
    * Reset entity.
    */
   void reset();
+
+  void addComponent(Component component);
 }

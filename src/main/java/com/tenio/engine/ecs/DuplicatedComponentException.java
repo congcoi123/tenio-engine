@@ -22,24 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-package com.tenio.engine.exception;
+package com.tenio.engine.ecs;
 
 /**
- * Exception thrown when attempting to add a duplicate component to an entity.
- * This exception is used in the Entity Component System (ECS) to prevent
- * multiple instances of the same component type being added to a single entity.
+ * Thrown when attempting to add a duplicate component to an entity.
  *
- * Features:
- * - Provides detailed error messages about the duplicate component
- * - Includes component type information in the error message
- * - Extends RuntimeException for unchecked exception handling
+ * <p>This exception is thrown when an attempt is made to add a component to an entity that already has a
+ * component of the same type. Each entity can only have one instance of each component type.
  *
- * Example usage:
- * {@code
- * if (entity.hasComponent(componentType)) {
- *     throw new DuplicatedComponentException("Component already exists: " + componentType);
- * }
- * }
+ * <p>The exception provides information about the attempted duplicate component addition and helps maintain
+ * the integrity of the entity-component system.
+ *
+ * <p>This class extends {@link RuntimeException} to indicate that this is an unchecked exception that can
+ * occur during normal operation of the ECS.
  *
  * @see com.tenio.engine.ecs.basis.Entity
  * @see com.tenio.engine.ecs.basis.Component
@@ -47,9 +42,25 @@ package com.tenio.engine.exception;
  */
 public final class DuplicatedComponentException extends RuntimeException {
 
-  private static final long serialVersionUID = -6303904123354154639L;
+  private static final long serialVersionUID = -5550084534331675241L;
 
+  /**
+   * Creates a new DuplicatedComponentException with the specified message.
+   *
+   * @param message the detail message
+   */
   public DuplicatedComponentException(String message) {
     super(message);
   }
-}
+
+  /**
+   * Creates a new DuplicatedComponentException with the specified message and cause.
+   *
+   * @param message the detail message
+   * @param cause   the cause of this exception
+   */
+  public DuplicatedComponentException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+} 

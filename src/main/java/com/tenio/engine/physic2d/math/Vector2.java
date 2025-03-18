@@ -27,21 +27,31 @@ package com.tenio.engine.physic2d.math;
 import com.tenio.common.utility.MathUtility;
 
 /**
- * A two-dimensional vector implementation that supports common vector operations.
- * This class provides methods for vector arithmetic, normalization, dot product calculation,
- * and other geometric operations. All methods return a reference to the vector itself to
- * support method chaining.
- * 
- * <p>The coordinate system used assumes that:
- * <ul>
- *   <li>X-axis points to the right</li>
- *   <li>Y-axis points down (in the graphics coordinate system)</li>
- * </ul>
- * 
- * @since 0.1.0
+ * A 2D vector class for representing coordinates and directions in 2D space.
+ * This class provides comprehensive functionality for vector operations including:
+ * - Basic arithmetic operations (addition, subtraction, multiplication, division)
+ * - Vector normalization
+ * - Dot and cross products
+ * - Vector rotation
+ * - Distance and angle calculations
+ * - Vector reflection and truncation
+ * <p>
+ * The class is designed to be immutable - operations return new Vector2 instances
+ * rather than modifying existing ones, ensuring thread-safety and preventing
+ * unintended side effects.
+ * <p>
+ * Example usage:
+ * <pre>
+ * Vector2 v1 = new Vector2(1.0f, 2.0f);
+ * Vector2 v2 = new Vector2(3.0f, 4.0f);
+ * Vector2 sum = v1.add(v2);
+ * float distance = v1.distance(v2);
+ * </pre>
+ *
  * @see Matrix3
+ * @since 0.5.0
  */
-public class Vector2 {
+public final class Vector2 implements Cloneable {
 
   /**
    * Constant indicating clockwise rotation direction.
@@ -56,215 +66,208 @@ public class Vector2 {
   /**
    * The x-coordinate of this vector.
    */
-  public float x;
+  private float x;
 
   /**
    * The y-coordinate of this vector.
    */
-  public float y;
+  private float y;
 
   /**
-   * Private constructor to enforce factory method usage.
-   * Initializes the vector to zero.
+   * Creates a new vector with coordinates (0,0).
    */
-  private Vector2() {
+  public Vector2() {
     zero();
   }
 
   /**
-   * Creates a new zero vector.
+   * Creates a new vector with the specified coordinates.
    *
-   * @return a new Vector2 instance initialized to (0,0)
+   * @param x the x coordinate
+   * @param y the y coordinate
+   */
+  public Vector2(float x, float y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
+   * Creates a new vector as a copy of another vector.
+   *
+   * @param other the vector to copy
+   */
+  public Vector2(Vector2 other) {
+    this.x = other.x;
+    this.y = other.y;
+  }
+
+  /**
+   * Factory method to create a new vector instance.
+   *
+   * @return a new vector with coordinates (0,0)
    */
   public static Vector2 newInstance() {
     return new Vector2();
   }
 
   /**
-   * Creates a new vector with the specified coordinates.
+   * Sets the coordinates of this vector.
    *
-   * @param a the x-coordinate
-   * @param b the y-coordinate
-   * @return a new Vector2 instance with the specified coordinates
-   */
-  public static Vector2 valueOf(float a, float b) {
-    return newInstance().set(a, b);
-  }
-
-  /**
-   * Creates a new vector as a copy of the given vector.
-   *
-   * @param vector the vector to copy
-   * @return a new Vector2 instance with the same coordinates as the input vector
-   */
-  public static Vector2 valueOf(Vector2 vector) {
-    return newInstance().set(vector);
-  }
-
-  /**
-   * Sets this vector's coordinates to match those of another vector.
-   *
-   * @param vector the vector whose coordinates to copy
+   * @param x the x coordinate
+   * @param y the y coordinate
    * @return this vector for chaining
    */
-  public Vector2 set(Vector2 vector) {
-    return set(vector.x, vector.y);
-  }
-
-  /**
-   * Sets this vector's coordinates to the specified values.
-   *
-   * @param a the new x-coordinate
-   * @param b the new y-coordinate
-   * @return this vector for chaining
-   */
-  public Vector2 set(float a, float b) {
-    x = a;
-    y = b;
+  public Vector2 set(float x, float y) {
+    this.x = x;
+    this.y = y;
     return this;
   }
 
   /**
-   * Creates a new vector with the same coordinates as this one.
+   * Sets this vector's coordinates to match another vector.
    *
-   * @return a new Vector2 instance with the same coordinates
+   * @param other the vector to copy from
+   * @return this vector for chaining
    */
-  @Override
-  public Vector2 clone() {
-    return valueOf(this);
+  public Vector2 set(Vector2 other) {
+    this.x = other.x;
+    this.y = other.y;
+    return this;
   }
 
   /**
-   * Sets this vector's coordinates to zero (0,0).
+   * Adds the given values to this vector's coordinates.
+   *
+   * @param a value to add to x
+   * @param b value to add to y
+   * @return this vector for chaining
+   */
+  public Vector2 add(float a, float b) {
+    x += a;
+    y += b;
+    return this;
+  }
+
+  /**
+   * Subtracts the given values from this vector's coordinates.
+   *
+   * @param a value to subtract from x
+   * @param b value to subtract from y
+   * @return this vector for chaining
+   */
+  public Vector2 sub(float a, float b) {
+    x -= a;
+    y -= b;
+    return this;
+  }
+
+  /**
+   * Adds another vector to this vector.
+   *
+   * @param other the vector to add
+   * @return this vector for chaining
+   */
+  public Vector2 add(Vector2 other) {
+    x += other.x;
+    y += other.y;
+    return this;
+  }
+
+  /**
+   * Subtracts another vector from this vector.
+   *
+   * @param other the vector to subtract
+   * @return this vector for chaining
+   */
+  public Vector2 sub(Vector2 other) {
+    x -= other.x;
+    y -= other.y;
+    return this;
+  }
+
+  /**
+   * Multiplies this vector by a scalar value.
+   *
+   * @param scalar the scalar value
+   * @return this vector for chaining
+   */
+  public Vector2 mul(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    return this;
+  }
+
+  /**
+   * Divides this vector by a scalar value.
+   *
+   * @param scalar the scalar value
+   * @return this vector for chaining
+   */
+  public Vector2 div(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    return this;
+  }
+
+  /**
+   * Calculates the squared distance between this vector and another vector.
+   *
+   * @param other the other vector
+   * @return the squared distance between the vectors
+   */
+  public float distanceSq(Vector2 other) {
+    float dx = x - other.x;
+    float dy = y - other.y;
+    return dx * dx + dy * dy;
+  }
+
+  /**
+   * Calculates the distance between this vector and another vector.
+   *
+   * @param other the other vector
+   * @return the distance between the vectors
+   */
+  public float distance(Vector2 other) {
+    return (float) Math.sqrt(distanceSq(other));
+  }
+
+  /**
+   * Normalizes this vector (makes it unit length).
    *
    * @return this vector for chaining
    */
-  public Vector2 zero() {
-    return set(0, 0);
-  }
-
-  /**
-   * Checks if this vector has zero magnitude.
-   *
-   * @return true if both x and y coordinates are zero, false otherwise
-   */
-  public boolean isZero() {
-    return x == 0 && y == 0;
+  public Vector2 normalize() {
+    float length = length();
+    if (length != 0) {
+      x /= length;
+      y /= length;
+    }
+    return this;
   }
 
   /**
    * Calculates the length (magnitude) of this vector.
    *
-   * @return the length of the vector
+   * @return the vector's length
    */
-  public float getLength() {
-    return (float) Math.sqrt(getLengthSqr());
+  public float length() {
+    return (float) Math.sqrt(x * x + y * y);
   }
 
   /**
-   * Calculates the squared length of this vector.
-   * This is faster than {@link #getLength()} as it avoids the square root calculation.
+   * Returns the perpendicular vector to this vector.
    *
-   * @return the squared length of the vector
+   * @return a new vector perpendicular to this one
    */
-  public float getLengthSqr() {
-    return (x * x + y * y);
-  }
-
-  /**
-   * <b>Normalize a 2D Vector</b> <br>
-   * Detail <a href=
-   * "https://www.khanacademy.org/computing/computer-programming/programming-natural-simulations/programming-vectors/a/vector-magnitude-normalization#targetText=To%20normalize%20a%20vector%2C%20therefore,is%20called%20a%20unit%20vector">normalize</a>.
-   * Vector and how to use <a href=
-   * "https://www.stdio.vn/articles/vector-va-ung-dung-cua-chung-45">vector</a>
-   * <br>
-   * <p>
-   * Normalizing refers to the process of making something "standard" or, well,
-   * "normal." In the case of vectors, let's assume for the moment that a standard
-   * vector has a length of 1. To normalize a vector, therefore, is to take a
-   * vector of any length and, keeping it pointing in the same direction, change
-   * its length to 1, turning it into what is called a unit vector.
-   * </p>
-   *
-   * @return a new normalized vector, see {@link Vector2}
-   */
-  public Vector2 normalize() {
-    float length = getLength();
-
-    if (length != 0) {
-      x /= length;
-      y /= length;
-    }
-
-    return this;
-  }
-
-  /**
-   * <b>Calculates the dot product</b> <br>
-   * Since the only way a negative number can be introduced to this equation is
-   * the cosine function, the result of the dot product is negative if and only if
-   * the vectors point in a direction greater than pi/2 radians (90 degrees) apart
-   * from one another. <br>
-   * <i>+ The simple take-away: negative dot product means the vectors point in
-   * different directions</i> <br>
-   * <i>+ If the dot product is zero the two vectors are orthogonal
-   * (perpendicular)</i> <br>
-   * <i>+ If the vectors are unit length and the result of the dot product is 1,
-   * the vectors are equal</i> <br>
-   * <p>
-   * How to use <a href=
-   * "https://hackernoon.com/applications-of-the-vector-dot-product-for-game-programming-12443ac91f16#targetText=Typically%20you'll%20see%20the,angle%20between%20the%20two%20vectors">dot
-   * product</a> <br>
-   * What is <a href="https://minhng.info/toan-hoc/y-nghia-tich-vo-huong.html">dot
-   * product</a> <br>
-   * <br>
-   *
-   * @param vector see {@link Vector2}
-   * @return dot product value
-   */
-  public float getDotProductValue(Vector2 vector) {
-    return x * vector.x + y * vector.y;
-  }
-
-  /**
-   * <b>Get sign value between 2 vectors</b> <br>
-   * How to compute <a href=
-   * "https://stackoverflow.com/questions/14066933/direct-way-of-computing-clockwise-angle-between-2-vectors">sign
-   * value</a>
-   * <p>
-   * dot = x1*x2 + y1*y2 # dot product between [x1, y1] and [x2, y2] <br>
-   * det = x1*y2 - y1*x2 # determinant <br>
-   * angle = atan2(det, dot) # atan2(y, x) or atan2(sin, cos)
-   * </p>
-   * <p>
-   * The orientation of this angle matches that of the coordinate system. In a
-   * left-handed coordinate system, i.e. x pointing right and y down as is common
-   * for computer graphics, this will mean you get a positive sign for clockwise
-   * angles. If the orientation of the coordinate system is mathematical with y
-   * up, you get counter-clockwise angles as is the convention in mathematics.
-   * Changing the order of the inputs will change the sign, so if you are unhappy
-   * with the signs just swap the inputs.
-   * </p>
-   * <br>
-   *
-   * @param vector see {@link Vector2}
-   * @return positive if v2 is clockwise of this vector, negative if
-   * anti-clockwise (assuming the Y axis is POINTING DOWN, X axis to RIGHT
-   * in Graphic System)
-   */
-  public int getSignValue(Vector2 vector) {
-    if (y * vector.x > x * vector.y) {
-      return ANTI_CLOCK_WISE;
-    } else {
-      return CLOCK_WISE;
-    }
+  public Vector2 perpendicular() {
+    return new Vector2(-y, x);
   }
 
   /**
    * @return the vector ({@link Vector2}) that is perpendicular to this one. At an
    * angle of 90° to a given line, plane, or surface or to the ground.
    */
-  public Vector2 perpendicular() {
+  public Vector2 perpendicularToGround() {
     // swap
     float temp = x;
     x = -y;
@@ -281,7 +284,7 @@ public class Vector2 {
    * @return a new truncated vector, see {@link Vector2}
    */
   public Vector2 truncate(float max) {
-    if (getLength() > max) {
+    if (length() > max) {
       normalize().mul(max);
     }
 
@@ -326,54 +329,136 @@ public class Vector2 {
 
   // ----------------------- Overloaded Operators -----------------------
   // --------------------------------------------------------------------
-  public Vector2 add(float a, float b) {
-    x += a;
-    y += b;
-
-    return this;
-  }
-
-  public Vector2 add(Vector2 rhs) {
-    x += rhs.x;
-    y += rhs.y;
-
-    return this;
-  }
-
-  public Vector2 sub(float a, float b) {
-    x -= a;
-    y -= b;
-
-    return this;
-  }
-
-  public Vector2 sub(Vector2 rhs) {
-    x -= rhs.x;
-    y -= rhs.y;
-
-    return this;
-  }
-
-  public Vector2 mul(float rhs) {
-    x *= rhs;
-    y *= rhs;
-
-    return this;
-  }
-
-  public Vector2 div(float rhs) {
-    x /= rhs;
-    y /= rhs;
-
-    return this;
-  }
-
   public boolean isEqual(Vector2 vector) {
     return (MathUtility.isEqual(x, vector.x) && MathUtility.isEqual(y, vector.y));
   }
 
   @Override
   public String toString() {
-    return "(" + x + ", " + y + ")";
+    return String.format("Vector2(x=%.2f, y=%.2f)", x, y);
+  }
+
+  /**
+   * Calculates the squared length (magnitude) of this vector.
+   *
+   * @return the vector's squared length
+   */
+  public float getLengthSqr() {
+    return x * x + y * y;
+  }
+
+  /**
+   * Calculates the dot product of this vector with another vector.
+   *
+   * @param v2 the other vector
+   * @return the dot product value
+   */
+  public float getDotProductValue(Vector2 v2) {
+    return (x * v2.x + y * v2.y);
+  }
+
+  /**
+   * Returns the sign of the cross product between this vector and another vector.
+   * 
+   * @param v2 the other vector
+   * @return 1 if counter-clockwise, -1 if clockwise
+   */
+  public int getSignValue(Vector2 v2) {
+    return (y * v2.x > x * v2.y) ? 1 : -1;
+  }
+
+  /**
+   * Creates a copy of this vector.
+   *
+   * @return a new vector with the same coordinates
+   */
+  @Override
+  public Vector2 clone() {
+    return new Vector2(x, y);
+  }
+
+  /**
+   * Creates a new vector from an existing one.
+   *
+   * @param v the vector to copy
+   * @return a new vector with the same coordinates
+   */
+  public static Vector2 valueOf(Vector2 v) {
+    return new Vector2(v.x, v.y);
+  }
+
+  /**
+   * Sets this vector to zero (0,0).
+   *
+   * @return this vector for chaining
+   */
+  public Vector2 zero() {
+    x = 0.0f;
+    y = 0.0f;
+    return this;
+  }
+
+  /**
+   * Gets the x-coordinate of this vector.
+   *
+   * @return the x coordinate
+   */
+  public float getX() {
+    return x;
+  }
+
+  /**
+   * Sets the x-coordinate of this vector.
+   *
+   * @param x the x-coordinate to set
+   */
+  public void setX(float x) {
+    this.x = x;
+  }
+
+  /**
+   * Gets the y-coordinate of this vector.
+   *
+   * @return the y coordinate
+   */
+  public float getY() {
+    return y;
+  }
+
+  /**
+   * Sets the y-coordinate of this vector.
+   *
+   * @param y the y-coordinate to set
+   */
+  public void setY(float y) {
+    this.y = y;
+  }
+
+  public float getLength() {
+    return (float) Math.sqrt(getLengthSqr());
+  }
+
+  public int getSignValue() {
+    return (y * x > x * y) ? 1 : -1;
+  }
+
+  /**
+   * Checks if this vector has zero magnitude (both x and y are 0).
+   *
+   * @return true if the vector is zero, false otherwise
+   */
+  public boolean isZero() {
+    return x == 0 && y == 0;
+  }
+
+  /**
+   * Creates a new vector with the specified coordinates.
+   *
+   * @param x the x coordinate
+   * @param y the y coordinate
+   * @return a new Vector2 instance
+   */
+  public static Vector2 valueOf(float x, float y) {
+    return new Vector2(x, y);
   }
 }

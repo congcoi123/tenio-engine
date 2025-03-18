@@ -126,8 +126,8 @@ public final class Path implements Renderable {
 
       Vector2 temp = Transformation.vec2dRotateAroundOrigin(radialDist, 0, i * spacing);
 
-      temp.x += midX;
-      temp.y += midY;
+      temp.setX(temp.getX() + midX);
+      temp.setY(temp.getY() + midY);
 
       wayPoints.add(temp);
     }

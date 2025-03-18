@@ -91,8 +91,8 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
    * @return the index
    */
   private int getIndexByPosition(Vector2 position) {
-    int idx = (int) (numCellsX * position.x / spaceWidth)
-        + ((int) ((numCellsY) * position.y / spaceHeight) * numCellsX);
+    int idx = (int) (numCellsX * position.getX() / spaceWidth)
+        + ((int) ((numCellsY) * position.getY() / spaceHeight) * numCellsX);
 
     // if the entity's position is equal to vector2d(m_dSpaceWidth, m_dSpaceHeight)
     // then the index will overshoot. We need to check for this and adjust
@@ -154,37 +154,35 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
   public void calculateNeighbors(Vector2 targetPos, float queryRadius) {
     neighbors.clear();
 
-    // create the query box that is the bounding box of the target's query area
-    Vector2 temp = Vector2.newInstance().set(targetPos).sub(queryRadius, queryRadius);
-    aabbBox2D.setLeft(temp.x);
-    aabbBox2D.setTop(temp.y);
-    temp.set(targetPos).add(queryRadius, queryRadius);
-    aabbBox2D.setRight(temp.x);
-    aabbBox2D.setBottom(temp.y);
+    // Create the query box that is the bounding box of the circle of radius queryRadius
+    // and centered at targetPos
+    Vector2 temp = new Vector2(targetPos);
+    temp.setX(temp.getX() - queryRadius);
+    temp.setY(temp.getY() - queryRadius);
+    aabbBox2D.setLeft(temp.getX());
+    aabbBox2D.setTop(temp.getY());
 
-    // iterate through each cell and test to see if its bounding box overlaps
+    temp.set(targetPos);
+    temp.setX(temp.getX() + queryRadius);
+    temp.setY(temp.getY() + queryRadius);
+    aabbBox2D.setRight(temp.getX());
+    aabbBox2D.setBottom(temp.getY());
+
+    // Iterate through each cell and test to see if its bounding box overlaps
     // with the query box. If it does, and it also contains entities then
     // make further proximity tests.
-    ListIterator<Cell<T>> cellListIterator = cells.listIterator();
-    while (cellListIterator.hasNext()) {
-      Cell<T> curCell = cellListIterator.next();
-      // test to see if this cell contains members and if it overlaps the
-      // query box
+    for (Cell<T> curCell : cells) {
+      // Test to see if this cell contains members and if it overlaps the query box
       if (curCell.bbox.isOverlappedWith(aabbBox2D) && !curCell.members.isEmpty()) {
-
-        // add any entities found within query radius to the neighbor list
-        ListIterator<T> it = curCell.members.listIterator();
-        while (it.hasNext()) {
-          T ent = it.next();
-          if (temp.set(ent.getPosition()).getDistanceSqrValue(targetPos)
-              < queryRadius * queryRadius) {
+        // Add any entities found within query radius to the neighbor list
+        for (T ent : curCell.members) {
+          temp.set(ent.getPosition());
+          if (temp.getDistanceSqrValue(targetPos) < queryRadius * queryRadius) {
             neighbors.add(ent);
           }
         }
       }
     }
-
-    currNeighbor = neighbors.listIterator();
   }
 
   /**
@@ -193,7 +191,7 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
    * @return a reference to the entity at the front of the neighbor vector
    */
   public T getFrontOfNeighbor() {
-    if (!currNeighbor.hasNext()) {
+    if (Objects.isNull(currNeighbor) || !currNeighbor.hasNext()) {
       return null;
     }
     return currNeighbor.next();
@@ -217,7 +215,7 @@ public class CellSpacePartition<T extends BaseGameEntity> implements Renderable 
    * @return <b>true</b> if the end of the vector is found (a zero value marks the end)
    */
   public boolean isEndOfNeighbors() {
-    return (Objects.isNull(currNeighbor) || (!currNeighbor.hasNext()));
+    return (Objects.isNull(currNeighbor) || !currNeighbor.hasNext());
   }
 
   /**

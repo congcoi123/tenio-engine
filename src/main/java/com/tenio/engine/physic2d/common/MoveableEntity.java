@@ -33,20 +33,11 @@ import com.tenio.engine.physic2d.math.Vector2;
  */
 public abstract class MoveableEntity extends BaseGameEntity {
 
-  private final Vector2 velocity = Vector2.newInstance();
-  private final Vector2 heading = Vector2.newInstance();
-  private final Vector2 side = Vector2.newInstance();
+  private Vector2 velocity;
+  private Vector2 heading;
+  private Vector2 side;
   // for entity's mass
-  private final float mass;
-  // vector for velocity
-  private float velocityX;
-  private float velocityY;
-  // a normalized vector pointing in the direction the entity is heading
-  private float headingX;
-  private float headingY;
-  // a vector perpendicular to the heading vector
-  private float sideX;
-  private float sideY;
+  private float mass;
   // the maximum speed this entity may travel at
   private float maxSpeed;
   // the maximum force this entity can produce to power itself
@@ -58,25 +49,29 @@ public abstract class MoveableEntity extends BaseGameEntity {
   private float rotation;
 
   /**
-   * Constructor.
+   * Creates a new moveable entity with the specified parameters.
    *
-   * @param position    the current position
-   * @param radius      the radius
-   * @param velocity    the velocity
-   * @param maxSpeed    the max speed
-   * @param heading     the heading vector
-   * @param mass        the mass
-   * @param scale       the scale value
-   * @param maxTurnRate the max turn rate
-   * @param maxForce    the max force
+   * @param position    the initial position vector
+   * @param radius     the bounding radius
+   * @param velocity   the initial velocity vector
+   * @param maxSpeed   the maximum speed
+   * @param heading    the initial heading vector
+   * @param mass       the entity's mass
+   * @param scale      the scale vector
+   * @param maxTurnRate the maximum turn rate
+   * @param maxForce   the maximum force that can be applied
    */
   public MoveableEntity(Vector2 position, float radius, Vector2 velocity, float maxSpeed,
                         Vector2 heading, float mass,
                         Vector2 scale, float maxTurnRate, float maxForce) {
-    super(0, position.x, position.y, radius);
+    super(0, position.getX(), position.getY(), radius);
+
+    this.velocity = new Vector2();
+    this.heading = new Vector2();
+    this.side = new Vector2();
 
     setVelocity(velocity);
-    setScale(scale);
+    setScale(scale.getX(), scale.getY());
     setHeading(heading);
     this.mass = mass;
     this.maxSpeed = maxSpeed;
@@ -84,41 +79,39 @@ public abstract class MoveableEntity extends BaseGameEntity {
     this.maxForce = maxForce;
   }
 
-  public float getVelocityX() {
-    return velocityX;
-  }
-
-  public float getVelocityY() {
-    return velocityY;
+  /**
+   * Creates a new moveable entity with the specified ID.
+   *
+   * @param id the entity's unique identifier
+   */
+  public MoveableEntity(int id) {
+    super(id);
+    mass = 0.0f;
+    maxSpeed = 0.0f;
+    velocity = new Vector2();
+    heading = new Vector2(1.0f, 0.0f);
+    side = new Vector2(0.0f, 1.0f);
   }
 
   public Vector2 getVelocity() {
-    return velocity.set(velocityX, velocityY);
+    return velocity;
   }
 
   public void setVelocity(Vector2 velocity) {
-    setVelocity(velocity.x, velocity.y);
+    setVelocity(velocity.getX(), velocity.getY());
   }
 
   public void setVelocity(float x, float y) {
-    velocityX = x;
-    velocityY = y;
-  }
-
-  public float getHeadingX() {
-    return headingX;
-  }
-
-  public float getHeadingY() {
-    return headingY;
+    velocity.setX(x);
+    velocity.setY(y);
   }
 
   public Vector2 getHeading() {
-    return heading.set(headingX, headingY);
+    return heading;
   }
 
   public void setHeading(Vector2 heading) {
-    setHeading(heading.x, heading.y);
+    setHeading(heading.getX(), heading.getY());
   }
 
   /**
@@ -130,34 +123,34 @@ public abstract class MoveableEntity extends BaseGameEntity {
    * @param y the new heading in Y
    */
   public void setHeading(float x, float y) {
-    headingX = x;
-    headingY = y;
+    heading.setX(x);
+    heading.setY(y);
     // the side vector must always be perpendicular to the heading
     Vector2 temp = Vector2.newInstance().set(x, y).perpendicular();
-    sideX = temp.x;
-    sideY = temp.y;
+    side.setX(temp.getX());
+    side.setY(temp.getY());
     // update the rotation
-    float angle = (float) Math.atan2(headingY, headingX);
+    float angle = (float) Math.atan2(y, x);
     float degrees = (float) (180 * angle / Math.PI);
     degrees = (360 + Math.round(degrees)) % 360;
     rotation = degrees;
   }
 
   public float getSideX() {
-    return sideX;
+    return side.getX();
   }
 
   public float getSideY() {
-    return sideY;
+    return side.getY();
   }
 
   public Vector2 getSide() {
-    return side.set(sideX, sideY);
+    return side;
   }
 
   private void setSide(Vector2 side) {
-    sideX = side.x;
-    sideY = side.y;
+    this.side.setX(side.getX());
+    this.side.setY(side.getY());
   }
 
   public float getRotation() {
@@ -246,5 +239,23 @@ public abstract class MoveableEntity extends BaseGameEntity {
     setSide(getHeading().perpendicular());
 
     return false;
+  }
+
+  public void update(float deltaTime) {
+    // Update the position
+    Vector2 pos = getPosition();
+    Vector2 vel = getVelocity();
+    pos.set(pos.getX() + vel.getX() * deltaTime, pos.getY() + vel.getY() * deltaTime);
+    setPosition(pos);
+
+    // Update the heading if the velocity is non-zero
+    float velocityLengthSqr = getSpeedSqr();
+    if (velocityLengthSqr > 0.00001f) {
+      setHeading(vel.getX(), vel.getY());
+      // Update side vector to be perpendicular to heading
+      Vector2 head = getHeading();
+      Vector2 perpendicular = Vector2.newInstance().set(-head.getY(), head.getX());
+      setSide(perpendicular);
+    }
   }
 }

@@ -108,6 +108,11 @@ public final class EntitiesRelationship {
       Vector2 temp = Vector2.newInstance().set(entity.getPosition()).sub(curEntity.getPosition());
 
       float distFromEachOther = temp.getLength();
+      
+      // Skip if either entity has invalid radius
+      if (Float.isNaN(entity.getBoundingRadius()) || Float.isNaN(curEntity.getBoundingRadius())) {
+        continue;
+      }
 
       // if this distance is smaller than the sum of their radius then this
       // entity must be moved away in the direction parallel to the
@@ -115,16 +120,16 @@ public final class EntitiesRelationship {
       float amountOfOverLap =
           curEntity.getBoundingRadius() + entity.getBoundingRadius() - distFromEachOther;
 
-      if (amountOfOverLap >= 0) {
-        // move the entity a distance away equivalent to the amount of overlap.
-        /*
-         * Temp = (EntityPosition - CurrentEntityPosition); Distance = Temp->getLength;
-         * NewPosition = EntityPosition + ((Temp / Distance) * Amount)
-         */
-        temp.div(distFromEachOther).mul(amountOfOverLap).add(entity.getPosition());
-        entity.setPosition(temp);
+      if (amountOfOverLap >= 0 && distFromEachOther > 0) {
+        // Create a normalized direction vector
+        Vector2 direction = temp.normalize();
+        // Calculate the new position
+        Vector2 newPosition = Vector2.newInstance()
+            .set(entity.getPosition())
+            .add(direction.mul(amountOfOverLap));
+        entity.setPosition(newPosition);
       }
-    } // next entity
+    }
   }
 
   // Tests a line segment AB against a container of entities. First, a test
@@ -144,16 +149,14 @@ public final class EntitiesRelationship {
       T curEntity = it.next();
       // if not within range or the entity being checked is the_one_to_ignore
       // just continue with the next entity
-      float distance = Vector2.newInstance().set(curEntity.getPosition())
-          .getDistanceSqrValue(vectorA);
-      if ((curEntity.getId().equals(theOneToIgnore)) || distance > MathUtility.MAX_FLOAT) {
+      if (curEntity.getId().equals(theOneToIgnore)) {
         continue;
       }
 
       // if the distance to AB is less than the entities bounding radius then
       // there is an intersection so add it to hits
-      if (Geometry.getDistancePointSegment(vectorA, vectorB, curEntity.getPosition())
-          < curEntity.getBoundingRadius()) {
+      float distanceToSegment = Geometry.getDistancePointSegment(vectorA, vectorB, curEntity.getPosition());
+      if (distanceToSegment < curEntity.getBoundingRadius()) {
         hits.add(curEntity);
       }
     }
@@ -170,36 +173,45 @@ public final class EntitiesRelationship {
   public static <T extends BaseGameEntity, CT extends
       List<T>> T getClosestEntityLineSegmentIntersection(
       final CT entities, String theOneToIgnore, Vector2 vectorA, Vector2 vectorB) {
+    if (entities == null || entities.isEmpty()) {
+      return null;
+    }
+
     ListIterator<T> it = entities.listIterator();
-
     T closestEntity = null;
-
     float closestDist = MathUtility.MAX_FLOAT;
 
-    // iterate through all entities checking against the line segment vectorA-vectorB
     while (it.hasNext()) {
       T curEntity = it.next();
 
-      float distSq = Vector2.newInstance().set(curEntity.getPosition())
-          .getDistanceSqrValue(vectorA);
-
-      // if not within range or the entity being checked is the_one_to_ignore
-      // just continue with the next entity
-      if ((curEntity.getId().equals(theOneToIgnore)) || (distSq > MathUtility.MAX_FLOAT)) {
+      // Skip if entity is null or is the one to ignore
+      if (curEntity == null || (theOneToIgnore != null && theOneToIgnore.equals(curEntity.getId()))) {
         continue;
       }
 
-      // if the distance to AB is less than the entities bounding radius then
-      // there is an intersection so add it to hits
-      if (Geometry.getDistancePointSegment(vectorA, vectorB, curEntity.getPosition())
-          < curEntity.getBoundingRadius()) {
-        if (distSq < closestDist) {
-          closestDist = distSq;
+      // Skip if entity has invalid radius
+      if (Float.isNaN(curEntity.getBoundingRadius()) || curEntity.getBoundingRadius() <= 0) {
+        continue;
+      }
 
+      // Calculate distances
+      float distanceToSegment = Geometry.getDistancePointSegment(vectorA, vectorB, curEntity.getPosition());
+      if (Float.isNaN(distanceToSegment)) {
+        continue;
+      }
+
+      float distanceToA = Vector2.newInstance().set(curEntity.getPosition()).getDistanceValue(vectorA);
+      if (Float.isNaN(distanceToA)) {
+        continue;
+      }
+
+      // Check for intersection
+      if (distanceToSegment < curEntity.getBoundingRadius()) {
+        if (distanceToA < closestDist) {
+          closestDist = distanceToA;
           closestEntity = curEntity;
         }
       }
-
     }
     return closestEntity;
   }

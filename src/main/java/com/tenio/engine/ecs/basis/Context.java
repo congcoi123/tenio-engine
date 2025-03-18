@@ -25,12 +25,11 @@ THE SOFTWARE.
 package com.tenio.engine.ecs.basis;
 
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
+import com.tenio.engine.ecs.pool.ComponentPool;
 import java.util.Map;
 
 /**
- * A context is used to manage all relative entities and components.
- *
- * @param <T> the entity template
+ * A context manages the life-cycle of entities and groups.
  */
 public interface Context<T extends Entity> {
 
@@ -94,4 +93,13 @@ public interface Context<T extends Entity> {
    * Reset the current context.
    */
   void reset();
+
+  /**
+   * Gets the component pool for a specific component type.
+   *
+   * @param <C> the type of component
+   * @param componentClass the class of the component
+   * @return the component pool for the specified component type
+   */
+  <C extends Component> ComponentPool<C> getComponentPool(Class<C> componentClass);
 }

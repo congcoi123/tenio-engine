@@ -37,6 +37,11 @@ public abstract class Component<T> {
    */
   protected final T entity;
 
+  /**
+   * Creates a new component for the specified entity.
+   *
+   * @param entity the entity that owns this component
+   */
   public Component(T entity) {
     this.entity = entity;
   }

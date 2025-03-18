@@ -24,12 +24,67 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.model;
 
+import com.tenio.engine.ecs.basis.Component;
+import com.tenio.engine.ecs.basis.Context;
 import com.tenio.engine.ecs.basis.implement.ContextImpl;
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
+import com.tenio.engine.ecs.pool.ComponentPool;
+import java.util.Map;
 
-public final class GameContext extends ContextImpl<GameEntity> {
+public final class GameContext implements Context<GameEntity> {
+  private final ContextImpl<GameEntity> context;
 
   public GameContext(ContextInfo contextInfo) {
-    super(contextInfo, GameEntity.class);
+    this.context = new ContextImpl<>(contextInfo.getNumberComponents());
+  }
+
+  @Override
+  public GameEntity createEntity() {
+    return context.createEntity();
+  }
+
+  @Override
+  public GameEntity getEntity(String entityId) {
+    return context.getEntity(entityId);
+  }
+
+  @Override
+  public void destroyEntity(GameEntity entity) {
+    context.destroyEntity(entity);
+  }
+
+  @Override
+  public boolean hasEntity(GameEntity entity) {
+    return context.hasEntity(entity);
+  }
+
+  @Override
+  public Map<String, GameEntity> getEntities() {
+    return context.getEntities();
+  }
+
+  @Override
+  public ContextInfo getContextInfo() {
+    return context.getContextInfo();
+  }
+
+  @Override
+  public int getEntitiesCount() {
+    return context.getEntitiesCount();
+  }
+
+  @Override
+  public void destroyAllEntities() {
+    context.destroyAllEntities();
+  }
+
+  @Override
+  public void reset() {
+    context.reset();
+  }
+
+  @Override
+  public <C extends Component> ComponentPool<C> getComponentPool(Class<C> componentClass) {
+    return context.getComponentPool(componentClass);
   }
 }

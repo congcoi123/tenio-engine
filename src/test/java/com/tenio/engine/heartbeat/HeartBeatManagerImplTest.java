@@ -3,11 +3,8 @@ package com.tenio.engine.heartbeat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.tenio.engine.exception.HeartbeatNotFoundException;
 import com.tenio.engine.message.ExtraMessage;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

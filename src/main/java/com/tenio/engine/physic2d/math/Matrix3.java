@@ -27,27 +27,29 @@ package com.tenio.engine.physic2d.math;
 import java.util.List;
 
 /**
- * A 3x3 matrix implementation designed for 2D geometric transformations.
- * This class uses row-major ordering and provides methods for common transformations
- * such as translation, rotation, and scaling.
- * 
- * <p>The matrix is structured as follows:
+ * A 3x3 matrix class designed for 2D transformations and coordinate space operations.
+ * This class provides functionality for common matrix operations including:
+ * - Matrix multiplication
+ * - Transformation operations (translation, rotation, scaling)
+ * - Identity matrix creation
+ * - Matrix transposition
+ * - Determinant calculation
+ * <p>
+ * The matrix is stored in row-major order and can be used for:
+ * - 2D affine transformations
+ * - Coordinate space conversions
+ * - Composite transformations through matrix multiplication
+ * <p>
+ * Example usage:
  * <pre>
- * | p11 p12 p13 |
- * | p21 p22 p23 |
- * | p31 p32 p33 |
+ * Matrix3 transform = Matrix3.identity();
+ * transform = transform.translate(2.0f, 3.0f);
+ * transform = transform.rotate(45.0f);
+ * Vector2 transformed = transform.transformVector(new Vector2(1.0f, 1.0f));
  * </pre>
- * 
- * <p>For 2D transformations:
- * <ul>
- *   <li>p11, p12: Rotation and scaling for x</li>
- *   <li>p21, p22: Rotation and scaling for y</li>
- *   <li>p31, p32: Translation for x and y</li>
- *   <li>p13, p23, p33: Homogeneous coordinates (usually 0, 0, 1)</li>
- * </ul>
- * 
+ *
  * @see Vector2
- * @since 0.1.0
+ * @since 0.5.0
  */
 public final class Matrix3 {
 
@@ -231,10 +233,10 @@ public final class Matrix3 {
    */
   public void transformVector2Ds(List<Vector2> points) {
     points.forEach(vector -> {
-      float tempX = (matrix.p11 * vector.x) + (matrix.p21 * vector.y) + (matrix.p31);
-      float tempY = (matrix.p12 * vector.x) + (matrix.p22 * vector.y) + (matrix.p32);
-      vector.x = tempX;
-      vector.y = tempY;
+      float tempX = (matrix.p11 * vector.getX()) + (matrix.p21 * vector.getY()) + (matrix.p31);
+      float tempY = (matrix.p12 * vector.getX()) + (matrix.p22 * vector.getY()) + (matrix.p32);
+      vector.setX(tempX);
+      vector.setY(tempY);
     });
   }
 
@@ -245,11 +247,11 @@ public final class Matrix3 {
    * @param point the vector to transform
    */
   public void transformVector2D(Vector2 point) {
-    float tempX = (matrix.p11 * point.x) + (matrix.p21 * point.y) + (matrix.p31);
-    float tempY = (matrix.p12 * point.x) + (matrix.p22 * point.y) + (matrix.p32);
+    float tempX = (matrix.p11 * point.getX()) + (matrix.p21 * point.getY()) + (matrix.p31);
+    float tempY = (matrix.p12 * point.getX()) + (matrix.p22 * point.getY()) + (matrix.p32);
 
-    point.x = tempX;
-    point.y = tempY;
+    point.setX(tempX);
+    point.setY(tempY);
   }
 
   /**
@@ -260,16 +262,8 @@ public final class Matrix3 {
    * @param y the distance to move along the y-axis
    */
   public void translate(float x, float y) {
-    /*
-     * matrix._11 = 1; matrix._12 = 0; matrix._13 = 0;
-     * matrix._21 = 0; matrix._22 = 1; matrix._23 = 0;
-     * matrix._31 = x; matrix._32 = y; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
     tempMatrix.set(1, 0, 0, 0, 1, 0, x, y, 1);
-
-    // and multiply
     mul(tempMatrix);
   }
 
@@ -281,16 +275,8 @@ public final class Matrix3 {
    * @param yscale the scaling factor for the y-axis
    */
   public void scale(float xscale, float yscale) {
-    /*
-     * matrix._11 = xscale; matrix._12 = 0; matrix._13 = 0;
-     * matrix._21 = 0; matrix._22 = yscale; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
     tempMatrix.set(xscale, 0, 0, 0, yscale, 0, 0, 0, 1);
-
-    // and multiply
     mul(tempMatrix);
   }
 
@@ -304,16 +290,8 @@ public final class Matrix3 {
     float sin = (float) Math.sin(rotation);
     float cos = (float) Math.cos(rotation);
 
-    /*
-     * matrix._11 = cos; matrix._12 = sin; matrix._13 = 0;
-     * matrix._21 = -sin; matrix._22 = cos; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
-    tempMatrix.set(cos, sin, 0, -sin, cos, 0, 0, 0, 1);
-
-    // and multiply
+    tempMatrix.set(cos, -sin, 0, sin, cos, 0, 0, 0, 1);
     mul(tempMatrix);
   }
 
@@ -325,16 +303,8 @@ public final class Matrix3 {
    * @param side the side direction vector
    */
   public void rotate(Vector2 forward, Vector2 side) {
-    /*
-     * matrix._11 = forward.x; matrix._12 = forward.y; matrix._13 = 0;
-     * matrix._21 = side.x; matrix._22 = side.y; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
-    tempMatrix.set(forward.x, forward.y, 0, side.x, side.y, 0, 0, 0, 1);
-
-    // and multiply
+    tempMatrix.set(forward.getX(), -side.getX(), 0, forward.getY(), side.getY(), 0, 0, 0, 1);
     mul(tempMatrix);
   }
 

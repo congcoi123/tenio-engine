@@ -33,28 +33,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A singleton class that provides methods for rendering graphics to a screen.
- * This class wraps Java AWT graphics operations and provides convenient methods for
- * drawing text, shapes, lines, and other graphical elements.
- * 
- * <p>Features include:
- * <ul>
- *   <li>Text rendering with optional background</li>
- *   <li>Basic shape drawing (dots, lines, crosses)</li>
- *   <li>Polygon rendering</li>
- *   <li>Arrow drawing</li>
- *   <li>Color management for pen, background, and text</li>
- * </ul>
- * 
- * <p>Usage example:
- * <pre>
- * Paint paint = Paint.getInstance();
- * paint.startDrawing(graphics);
- * paint.setPenColor(Color.RED);
- * paint.drawLine(0, 0, 100, 100);
- * </pre>
- * 
- * @since 0.1.0
+ * A utility class for rendering graphics in a 2D game environment.
+ *
+ * <p>This class provides methods for drawing various shapes, lines, and text on a graphics context.
+ * It supports different colors, line styles, and text formatting options.
+ *
+ * <p>Example usage:
+ * {@code
+ * Paint paint = new Paint();
+ * List<Vector2> path = getPathPoints();
+ * paint.drawPath(path);
+ * paint.drawCircle(position, radius);
+ * paint.drawText("Score: " + score, x, y);
+ * }
+ *
+ * @see com.tenio.engine.physic2d.math.Vector2
+ * @see java.awt.Graphics2D
+ * @since 0.5.0
  */
 public final class Paint {
 
@@ -189,7 +184,7 @@ public final class Paint {
    * @param text the text to draw
    */
   public void drawTextAtPosition(Vector2 position, String text) {
-    drawTextAtPosition((int) position.x, (int) position.y, text);
+    drawTextAtPosition((int) position.getX(), (int) position.getY(), text);
   }
 
   /**
@@ -274,44 +269,32 @@ public final class Paint {
    * @param position the position where to draw the dot
    */
   public void drawDot(Vector2 position) {
-    drawDot((int) position.x, (int) position.y);
+    drawDot((int) position.getX(), (int) position.getY());
   }
 
   // ------------------ Draw Line ------------------
   // -----------------------------------------------
 
   /**
-   * Draws a line between two points specified by integer coordinates.
+   * Draws a line between two points.
    *
-   * @param x1 the x-coordinate of the start point
-   * @param y1 the y-coordinate of the start point
-   * @param x2 the x-coordinate of the end point
-   * @param y2 the y-coordinate of the end point
+   * @param fromX the x-coordinate of the start point
+   * @param fromY the y-coordinate of the start point
+   * @param toX   the x-coordinate of the end point
+   * @param toY   the y-coordinate of the end point
    */
-  public void drawLine(int x1, int y1, int x2, int y2) {
-    brush.drawLine(x1, y1, x2, y2);
+  public void drawLine(float fromX, float fromY, float toX, float toY) {
+    brush.drawLine((int)fromX, (int)fromY, (int)toX, (int)toY);
   }
 
   /**
-   * Draws a line between two points specified by floating-point coordinates.
-   *
-   * @param x1 the x-coordinate of the start point
-   * @param y1 the y-coordinate of the start point
-   * @param x2 the x-coordinate of the end point
-   * @param y2 the y-coordinate of the end point
-   */
-  public void drawLine(float x1, float y1, float x2, float y2) {
-    drawLine((int) x1, (int) y1, (int) x2, (int) y2);
-  }
-
-  /**
-   * Draws a line between two points specified by Vector2 objects.
+   * Draws a line between two points.
    *
    * @param from the start point
-   * @param to the end point
+   * @param to   the end point
    */
   public void drawLine(Vector2 from, Vector2 to) {
-    drawLine((int) from.x, (int) from.y, (int) to.x, (int) to.y);
+    drawLine((float)from.getX(), (float)from.getY(), (float)to.getX(), (float)to.getY());
   }
 
   /**
@@ -328,7 +311,7 @@ public final class Paint {
     polygon.reset();
 
     for (Vector2 v : points) {
-      polygon.addPoint((int) v.x, (int) v.y);
+      polygon.addPoint((int) v.getX(), (int) v.getY());
     }
     brush.setColor(penColor);
     brush.drawPolygon(polygon);
@@ -357,14 +340,14 @@ public final class Paint {
 
     // draw the line
     brush.setColor(penColor);
-    brush.drawLine((int) from.x, (int) from.y, (int) crossingPoint.x, (int) crossingPoint.y);
+    brush.drawLine((int) from.getX(), (int) from.getY(), (int) crossingPoint.getX(), (int) crossingPoint.getY());
 
     // draw the arrowhead (filled with the currently selected brush)
     polygon.reset();
 
-    polygon.addPoint((int) arrowPoint1.x, (int) arrowPoint1.y);
-    polygon.addPoint((int) arrowPoint2.x, (int) arrowPoint2.y);
-    polygon.addPoint((int) to.x, (int) to.y);
+    polygon.addPoint((int) arrowPoint1.getX(), (int) arrowPoint1.getY());
+    polygon.addPoint((int) arrowPoint2.getX(), (int) arrowPoint2.getY());
+    polygon.addPoint((int) to.getX(), (int) to.getY());
 
     if (Objects.nonNull(bgColor)) {
       brush.setColor(bgColor);
@@ -381,8 +364,11 @@ public final class Paint {
    */
   public void drawCross(int x, int y) {
     final int CROSS_SIZE = 5;
-    drawLine(x - CROSS_SIZE, y - CROSS_SIZE, x + CROSS_SIZE, y + CROSS_SIZE);
-    drawLine(x - CROSS_SIZE, y + CROSS_SIZE, x + CROSS_SIZE, y - CROSS_SIZE);
+    Color oldColor = brush.getColor();
+    brush.setColor(penColor);
+    brush.drawLine(x - CROSS_SIZE, y - CROSS_SIZE, x + CROSS_SIZE, y + CROSS_SIZE);
+    brush.drawLine(x - CROSS_SIZE, y + CROSS_SIZE, x + CROSS_SIZE, y - CROSS_SIZE);
+    brush.setColor(oldColor);
   }
 
   /**
@@ -401,7 +387,7 @@ public final class Paint {
    * @param position the center position of the cross
    */
   public void drawCross(Vector2 position) {
-    drawCross((int) position.x, (int) position.y);
+    drawCross((int) position.getX(), (int) position.getY());
   }
 
   // ------------------ Draw Geometry ------------------
@@ -459,7 +445,7 @@ public final class Paint {
     polygon.reset();
 
     for (Vector2 p : points) {
-      polygon.addPoint((int) p.x, (int) p.y);
+      polygon.addPoint((int) p.getX(), (int) p.getY());
     }
     brush.setColor(penColor);
     brush.drawPolygon(polygon);
@@ -469,35 +455,24 @@ public final class Paint {
   }
 
   /**
-   * Draws a circle with the specified center and radius.
+   * Draws a circle.
    *
-   * @param x the x-coordinate of the circle center
-   * @param y the y-coordinate of the circle center
-   * @param radius the radius of the circle in pixels
-   */
-  public void drawCircle(int x, int y, int radius) {
-    brush.drawOval(x - radius, y - radius, radius * 2, radius * 2);
-  }
-
-  /**
-   * Draws a circle with floating-point center coordinates and radius.
-   *
-   * @param x the x-coordinate of the circle center
-   * @param y the y-coordinate of the circle center
+   * @param x      the x-coordinate of the center
+   * @param y      the y-coordinate of the center
    * @param radius the radius of the circle
    */
   public void drawCircle(float x, float y, float radius) {
-    drawCircle((int) x, (int) y, (int) radius);
+    brush.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
   }
 
   /**
-   * Draws a circle centered at the specified Vector2 position.
+   * Draws a circle.
    *
-   * @param position the center position of the circle
-   * @param radius the radius of the circle
+   * @param position the center point
+   * @param radius   the radius of the circle
    */
   public void drawCircle(Vector2 position, float radius) {
-    drawCircle((int) position.x, (int) position.y, (int) radius);
+    drawCircle((float)position.getX(), (float)position.getY(), radius);
   }
 
   /**
@@ -529,7 +504,7 @@ public final class Paint {
    * @param radius the radius of the circle
    */
   public void drawFillCircle(Vector2 position, float radius) {
-    drawFillCircle((int) position.x, (int) position.y, (int) radius);
+    drawFillCircle((int) position.getX(), (int) position.getY(), (int) radius);
   }
 
   /**
@@ -625,5 +600,70 @@ public final class Paint {
    */
   public Graphics getBrush() {
     return brush;
+  }
+
+  /**
+   * Draws a dotted line between two points.
+   *
+   * @param fromX the x-coordinate of the start point
+   * @param fromY the y-coordinate of the start point
+   * @param toX   the x-coordinate of the end point
+   * @param toY   the y-coordinate of the end point
+   */
+  public void drawDottedLine(float fromX, float fromY, float toX, float toY) {
+    float dx = toX - fromX;
+    float dy = toY - fromY;
+    float len = (float)Math.sqrt(dx * dx + dy * dy);
+    float dotSpacing = 5.0f;  // Adjust this value to change dot spacing
+    
+    if (len > 0) {
+      dx /= len;
+      dy /= len;
+      float x = fromX;
+      float y = fromY;
+      
+      for (float i = 0; i < len; i += dotSpacing * 2) {
+        drawDot((int)x, (int)y);
+        x += dx * dotSpacing * 2;
+        y += dy * dotSpacing * 2;
+      }
+    }
+  }
+
+  /**
+   * Draws a dotted line between two points.
+   *
+   * @param from the start point
+   * @param to   the end point
+   */
+  public void drawDottedLine(Vector2 from, Vector2 to) {
+    drawDottedLine((float)from.getX(), (float)from.getY(), (float)to.getX(), (float)to.getY());
+  }
+
+  /**
+   * Draws a closed shape defined by a series of points.
+   *
+   * @param points the array of points defining the shape
+   */
+  public void drawClosedShape(Vector2[] points) {
+    if (points == null || points.length < 2) return;
+    
+    for (int i = 0; i < points.length - 1; i++) {
+      drawLine(points[i], points[i + 1]);
+    }
+    drawLine(points[points.length - 1], points[0]);
+  }
+
+  /**
+   * Draws a cross at the specified position.
+   *
+   * @param position the center point of the cross
+   * @param size     the size of the cross
+   */
+  public void drawCross(Vector2 position, float size) {
+    float x = position.getX();
+    float y = position.getY();
+    drawLine(x - size, y - size, x + size, y + size);
+    drawLine(x - size, y + size, x + size, y - size);
   }
 }

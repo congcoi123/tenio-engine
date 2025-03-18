@@ -1,3 +1,27 @@
+/*
+The MIT License
+
+Copyright (c) 2016-2023 kong <congcoi123@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
 package com.tenio.engine.physic2d.utility;
 
 import com.tenio.engine.physic2d.math.Matrix3;
@@ -7,7 +31,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Some functions for converting 2D vectors between World and Local space.
+ * Provides utility methods for transforming 2D vectors between world and local space coordinates.
+ * This class implements common transformation operations used in 2D graphics and physics simulations,
+ * such as point/vector transformations, rotations, and coordinate space conversions.
+ * <p>
+ * The class uses Matrix3 for transformation operations and supports:
+ * - Point to world space conversion
+ * - Vector to world space conversion
+ * - Point to local space conversion
+ * - Vector to local space conversion
+ * - Batch transformations of points
+ * <p>
+ * All methods are thread-safe as they create new instances for transformed vectors rather than
+ * modifying existing ones.
+ *
+ * @see Matrix3
+ * @see Vector2
+ * @since 0.5.0
  */
 public final class Transformation {
 
@@ -32,15 +72,15 @@ public final class Transformation {
     Matrix3 matrix = Matrix3.newInstance();
 
     // scale
-    if ((scale.x != 1) || (scale.y != 1)) {
-      matrix.scale(scale.x, scale.y);
+    if ((scale.getX() != 1) || (scale.getY() != 1)) {
+      matrix.scale(scale.getX(), scale.getY());
     }
 
     // rotate
     matrix.rotate(forward, side);
 
     // and translate
-    matrix.translate(position.x, position.y);
+    matrix.translate(position.getX(), position.getY());
 
     // now transform the object's vertices
     matrix.transformVector2Ds(tranVector2Ds);
@@ -71,7 +111,7 @@ public final class Transformation {
     matrix.rotate(forward, side);
 
     // and translate
-    matrix.translate(position.x, position.y);
+    matrix.translate(position.getX(), position.getY());
 
     // now transform the object's vertices
     matrix.transformVector2Ds(tranVector2Ds);
@@ -90,22 +130,29 @@ public final class Transformation {
    */
   public static Vector2 pointToWorldSpace(Vector2 point, Vector2 agentHeading, Vector2 agentSide,
                                           Vector2 agentPosition) {
-    // make a copy of the point
-    Vector2 temp = Vector2.newInstance().set(point);
+    // Make a copy of the point
+    Vector2 transPoint = new Vector2(point);
 
-    // create a transformation matrix
-    Matrix3 matrix = Matrix3.newInstance();
+    // Create a transformation matrix
+    float[] matrix = new float[9];
+    matrix[0] = agentHeading.getX();
+    matrix[1] = agentSide.getX();
+    matrix[2] = agentPosition.getX();
+    matrix[3] = agentHeading.getY();
+    matrix[4] = agentSide.getY();
+    matrix[5] = agentPosition.getY();
+    matrix[6] = 0;
+    matrix[7] = 0;
+    matrix[8] = 1;
 
-    // rotate
-    matrix.rotate(agentHeading, agentSide);
+    // Transform the point
+    float tempX = (matrix[0] * transPoint.getX()) + (matrix[1] * transPoint.getY()) + matrix[2];
+    float tempY = (matrix[3] * transPoint.getX()) + (matrix[4] * transPoint.getY()) + matrix[5];
 
-    // and translate
-    matrix.translate(agentPosition.x, agentPosition.y);
+    transPoint.setX(tempX);
+    transPoint.setY(tempY);
 
-    // now transform the vertices
-    matrix.transformVector2D(temp);
-
-    return temp;
+    return transPoint;
   }
 
   /**
@@ -118,19 +165,29 @@ public final class Transformation {
    */
   public static Vector2 vectorToWorldSpace(Vector2 vector, Vector2 agentHeading,
                                            Vector2 agentSide) {
-    // make a copy of the point
-    Vector2 temp = Vector2.newInstance().set(vector);
+    // Make a copy of the vector
+    Vector2 transVec = new Vector2(vector);
 
-    // create a transformation matrix
-    Matrix3 matrix = Matrix3.newInstance();
+    // Create a transformation matrix
+    float[] matrix = new float[9];
+    matrix[0] = agentHeading.getX();
+    matrix[1] = agentSide.getX();
+    matrix[2] = 0;
+    matrix[3] = agentHeading.getY();
+    matrix[4] = agentSide.getY();
+    matrix[5] = 0;
+    matrix[6] = 0;
+    matrix[7] = 0;
+    matrix[8] = 1;
 
-    // rotate
-    matrix.rotate(agentHeading, agentSide);
+    // Transform the vector
+    float tempX = (matrix[0] * transVec.getX()) + (matrix[1] * transVec.getY());
+    float tempY = (matrix[3] * transVec.getX()) + (matrix[4] * transVec.getY());
 
-    // now transform the vertices
-    matrix.transformVector2D(temp);
+    transVec.setX(tempX);
+    transVec.setY(tempY);
 
-    return temp.clone();
+    return transVec;
   }
 
   /**
@@ -144,27 +201,29 @@ public final class Transformation {
    */
   public static Vector2 pointToLocalSpace(Vector2 point, Vector2 agentHeading, Vector2 agentSide,
                                           Vector2 agentPosition) {
-    // make a copy of the point
-    Vector2 temp = Vector2.newInstance().set(point);
+    // Make a copy of the point
+    Vector2 transPoint = new Vector2(point);
 
-    // create a transformation matrix
-    Matrix3 matrix = Matrix3.newInstance();
+    // Create a transformation matrix
+    float[] matrix = new float[9];
+    matrix[0] = agentHeading.getX();
+    matrix[1] = agentHeading.getY();
+    matrix[2] = 0;
+    matrix[3] = agentSide.getX();
+    matrix[4] = agentSide.getY();
+    matrix[5] = 0;
+    matrix[6] = agentPosition.getX();
+    matrix[7] = agentPosition.getY();
+    matrix[8] = 1;
 
-    float tx = -agentPosition.getDotProductValue(agentHeading);
-    float ty = -agentPosition.getDotProductValue(agentSide);
+    // Transform the point
+    float tempX = (matrix[0] * transPoint.getX()) + (matrix[3] * transPoint.getY()) + matrix[6];
+    float tempY = (matrix[1] * transPoint.getX()) + (matrix[4] * transPoint.getY()) + matrix[7];
 
-    // create the transformation matrix
-    matrix.p11(agentHeading.x);
-    matrix.p12(agentSide.x);
-    matrix.p21(agentHeading.y);
-    matrix.p22(agentSide.y);
-    matrix.p31(tx);
-    matrix.p32(ty);
+    transPoint.setX(tempX);
+    transPoint.setY(tempY);
 
-    // now transform the vertices
-    matrix.transformVector2D(temp);
-
-    return temp;
+    return transPoint;
   }
 
   /**
@@ -177,22 +236,29 @@ public final class Transformation {
    */
   public static Vector2 vectorToLocalSpace(Vector2 vector, Vector2 agentHeading,
                                            Vector2 agentSide) {
-    // make a copy of the point
-    Vector2 temp = Vector2.newInstance().set(vector);
+    // Make a copy of the vector
+    Vector2 transVec = new Vector2(vector);
 
-    // create a transformation matrix
-    Matrix3 matrix = Matrix3.newInstance();
+    // Create a transformation matrix
+    float[] matrix = new float[9];
+    matrix[0] = agentHeading.getX();
+    matrix[1] = agentHeading.getY();
+    matrix[2] = 0;
+    matrix[3] = agentSide.getX();
+    matrix[4] = agentSide.getY();
+    matrix[5] = 0;
+    matrix[6] = 0;
+    matrix[7] = 0;
+    matrix[8] = 1;
 
-    // create the transformation matrix
-    matrix.p11(agentHeading.x);
-    matrix.p12(agentSide.x);
-    matrix.p21(agentHeading.y);
-    matrix.p22(agentSide.y);
+    // Transform the vector
+    float tempX = (matrix[0] * transVec.getX()) + (matrix[3] * transVec.getY());
+    float tempY = (matrix[1] * transVec.getX()) + (matrix[4] * transVec.getY());
 
-    // now transform the vertices
-    matrix.transformVector2D(temp);
+    transVec.setX(tempX);
+    transVec.setY(tempY);
 
-    return temp;
+    return transVec;
   }
 
   /**
@@ -291,23 +357,23 @@ public final class Transformation {
 
     boolean clone = false;
 
-    if (position.x > maxX) {
-      position.x = 0;
+    if (position.getX() > maxX) {
+      position.setX(0);
       clone = true;
     }
 
-    if (position.x < 0) {
-      position.x = maxX;
+    if (position.getX() < 0) {
+      position.setX(maxX);
       clone = true;
     }
 
-    if (position.y < 0) {
-      position.y = maxY;
+    if (position.getY() < 0) {
+      position.setY(maxY);
       clone = true;
     }
 
-    if (position.y > maxY) {
-      position.y = 0;
+    if (position.getY() > maxY) {
+      position.setY(0);
       clone = true;
     }
 

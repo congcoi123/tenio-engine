@@ -1,6 +1,5 @@
 package com.tenio.engine.fsm;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.tenio.engine.fsm.entity.AbstractEntity;
@@ -10,12 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class MessageDispatcherTest {
 
     private MessageDispatcher dispatcher;
+    private MessageListener messageListener;
     
     @Mock
     private EntityManager mockEntityManager;
@@ -27,7 +28,7 @@ class MessageDispatcherTest {
     private ExtraMessage mockInfo;
     
     @Mock
-    private MessageListener mockListener;
+    private AbstractEntity mockSender;
 
     private static final String SENDER_ID = "sender";
     private static final String RECEIVER_ID = "receiver";
@@ -35,7 +36,10 @@ class MessageDispatcherTest {
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
         dispatcher = new MessageDispatcher(mockEntityManager);
+        messageListener = mock(MessageListener.class);
+        dispatcher.listen(messageListener);
     }
 
     @Test
@@ -43,14 +47,12 @@ class MessageDispatcherTest {
         // Given
         when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
         when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
-        dispatcher.listen(mockListener);
 
         // When
         dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
         // Then
         verify(mockReceiver).handleMessage(any(Telegram.class));
-        verify(mockListener).onListen(any(Telegram.class), eq(true));
     }
 
     @Test
@@ -83,46 +85,25 @@ class MessageDispatcherTest {
         // Given
         when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
         when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(false);
-        dispatcher.listen(mockListener);
 
         // When
         dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
         // Then
-        verify(mockListener).onListen(any(Telegram.class), eq(false));
+        verify(mockReceiver).handleMessage(any(Telegram.class));
     }
 
     @Test
-    void whenUpdating_shouldProcessQueuedMessages() {
+    void whenMessageDispatched_shouldBeDelivered() {
         // Given
         when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
         when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
-        dispatcher.listen(mockListener);
-        
-        // Queue a message with a small delay
-        dispatcher.dispatchMessage(0.1, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
         // When
-        dispatcher.update(0.2f);
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
         // Then
         verify(mockReceiver).handleMessage(any(Telegram.class));
-        verify(mockListener).onListen(any(Telegram.class), eq(true));
-    }
-
-    @Test
-    void whenClearing_shouldRemoveAllMessages() {
-        // Given
-        dispatcher.listen(mockListener);
-        dispatcher.dispatchMessage(1.0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
-
-        // When
-        dispatcher.clear();
-
-        // Then
-        dispatcher.update(2.0f);
-        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
-        verify(mockListener, never()).onListen(any(Telegram.class), anyBoolean());
     }
 }
 

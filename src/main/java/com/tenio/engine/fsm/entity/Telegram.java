@@ -26,13 +26,45 @@ package com.tenio.engine.fsm.entity;
 
 import com.tenio.common.utility.TimeUtility;
 import com.tenio.engine.message.ExtraMessage;
-import java.util.Objects;
 
 /**
- * This object is used for communication between entities.
+ * A message class used for communication between entities in the Finite State Machine (FSM).
+ * Telegrams carry information about the sender, receiver, message type, and any additional
+ * data needed for the communication.
+ *
+ * <p>
+ * Features:
+ * - Message delivery timing control
+ * - Entity-to-entity communication
+ * - Message type identification
+ * - Additional data payload support
+ * - Message prioritization
+ * </p>
+ *
+ * <p>
+ * The telegram system supports both immediate and delayed message delivery,
+ * allowing for scheduled communications between entities. Messages can be
+ * prioritized and queued for delivery at specific times.
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * {@code
+ * Telegram telegram = new Telegram(
+ *     System.currentTimeMillis(), // Dispatch time
+ *     senderEntity,              // Sender
+ *     receiverEntity,            // Receiver
+ *     MessageType.ATTACK,        // Message type
+ *     attackData                 // Extra data
+ * );
+ * }
+ * </p>
+ *
+ * @see com.tenio.engine.fsm.entity.AbstractEntity
+ * @see com.tenio.engine.message.MessageDispatcher
+ * @since 0.5.0
  */
-@SuppressWarnings("rawtypes")
-public class Telegram implements Comparable {
+public final class Telegram implements Comparable<Telegram> {
 
   /**
    * These telegrams will be stored in a priority queue. Therefore, the operator
@@ -46,29 +78,34 @@ public class Telegram implements Comparable {
    * The id of the sender.
    */
   private final String sender;
+
   /**
    * The id of the receiver.
    */
   private final String receiver;
+
   /**
    * The type of this message.
    */
   private final int type;
+
   /**
    * The creation time.
    */
   private double createdTime;
+
   /**
    * The message will be sent after an interval time.
    */
   private double delayTime;
+
   /**
    * The extra information.
    */
   private ExtraMessage info;
 
   /**
-   * Initialization.
+   * Default constructor.
    */
   public Telegram() {
     createdTime = TimeUtility.currentTimeSeconds();
@@ -83,98 +120,133 @@ public class Telegram implements Comparable {
   }
 
   /**
-   * Initialization.
+   * Initialization with parameters.
    *
-   * @param delayTime the delay time
-   * @param sender    the sender
-   * @param receiver  the receiver
-   * @param type      the type
-   * @param info      the information
+   * <p>
+   * Creates a new telegram with the specified parameters for message delivery.
+   * </p>
+   *
+   * @param createdTime the time when the telegram is created
+   * @param sender      the sender's identifier
+   * @param receiver    the receiver's identifier
+   * @param type       the type of message
+   * @param info       additional information attached to the message
    */
-  public Telegram(double delayTime, String sender, String receiver, int type, ExtraMessage info) {
-    this.delayTime = delayTime;
+  public Telegram(double createdTime, String sender, String receiver, int type, ExtraMessage info) {
+    this.createdTime = createdTime;
     this.sender = sender;
     this.receiver = receiver;
     this.type = type;
     this.info = info;
   }
 
+  /**
+   * Retrieves the sender's identifier.
+   *
+   * @return the sender's identifier
+   */
   public String getSender() {
     return sender;
   }
 
+  /**
+   * Retrieves the receiver's identifier.
+   *
+   * @return the receiver's identifier
+   */
   public String getReceiver() {
     return receiver;
   }
 
+  /**
+   * Retrieves the message type.
+   *
+   * @return the message type
+   */
   public int getType() {
     return type;
   }
 
-  public double getDelayTime() {
-    return delayTime;
-  }
-
-  public void setDelayTime(double delay) {
-    delayTime = TimeUtility.currentTimeSeconds() + delay;
-  }
-
+  /**
+   * Retrieves the creation time of the telegram.
+   *
+   * @return the creation time
+   */
   public double getCreatedTime() {
     return createdTime;
   }
 
+  /**
+   * Sets the creation time of the telegram.
+   *
+   * @param createdTime the new creation time
+   */
+  public void setCreatedTime(double createdTime) {
+    this.createdTime = createdTime;
+  }
+
+  /**
+   * Retrieves the delay time before message delivery.
+   *
+   * @return the delay time
+   */
+  public double getDelayTime() {
+    return delayTime;
+  }
+
+  /**
+   * Sets the delay time before message delivery.
+   *
+   * @param delayTime the new delay time
+   */
+  public void setDelayTime(double delayTime) {
+    this.delayTime = delayTime;
+  }
+
+  /**
+   * Retrieves the additional information attached to the message.
+   *
+   * @return the additional information
+   */
   public ExtraMessage getInfo() {
     return info;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof Telegram)) {
-      return false;
-    }
-    var t1 = this;
-    var t2 = (Telegram) o;
-    return (Math.abs(t1.getDelayTime() - t2.getDelayTime()) < SMALLEST_DELAY)
-        && (Objects.equals(t1.getSender(), t2.getSender()))
-        && (Objects.equals(t1.getReceiver(), t2.getReceiver())) && (t1.getType() == t2.getType());
+  /**
+   * Sets the additional information for the message.
+   *
+   * @param info the new additional information
+   */
+  public void setInfo(ExtraMessage info) {
+    this.info = info;
   }
 
   /**
-   * It is generally necessary to override the <b>hashCode</b> method whenever
-   * equals method is overridden, to maintain the general contract for the
-   * hashCode method, which states that equal objects must have equal hash codes.
+   * Compares this telegram with another for priority queue ordering.
+   * <p>
+   * Telegrams are ordered based on their creation time, with a minimum difference
+   * threshold of {@link #SMALLEST_DELAY} to be considered unique.
+   * </p>
+   *
+   * @param other the telegram to compare with
+   * @return negative if this telegram should be processed before the other,
+   *         positive if after, and zero if they are considered equal
    */
   @Override
-  public int hashCode() {
-    int hash = 3;
-    hash = 89 * hash + sender.hashCode();
-    hash = 89 * hash + receiver.hashCode();
-    hash = 89 * hash + type;
-    return hash;
-  }
-
-  @Override
-  public int compareTo(Object o2) {
-    var t1 = this;
-    var t2 = (Telegram) o2;
-    if (t1 == t2) {
+  public int compareTo(Telegram other) {
+    if (Math.abs(this.createdTime - other.createdTime) < SMALLEST_DELAY) {
       return 0;
-    } else {
-      return (t1.getDelayTime() > t2.getDelayTime()) ? -1 : 1;
     }
+    return (this.createdTime - other.createdTime) > 0 ? 1 : -1;
   }
 
+  /**
+   * Returns a string representation of the telegram.
+   *
+   * @return a string containing the telegram's details
+   */
   @Override
   public String toString() {
-    return "Time: " +
-        delayTime +
-        ", Sender: " +
-        sender +
-        ", Receiver: " +
-        receiver +
-        ", MsgType: " +
-        type +
-        ", Info: " +
-        info.toString();
+    return String.format("Time: %.2f, Sender: %s, Receiver: %s, Msg: %d", createdTime, sender, receiver, type);
   }
 }

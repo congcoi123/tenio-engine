@@ -1,6 +1,6 @@
 package com.tenio.engine.fsm.entity;
 
-public class TestState extends State<TestEntity> {
+public class TestState implements State<TestEntity> {
     private boolean enterCalled;
     private boolean executeCalled;
     private boolean exitCalled;
@@ -27,10 +27,10 @@ public class TestState extends State<TestEntity> {
     }
 
     @Override
-    public boolean onMessage(TestEntity entity, Telegram msg) {
+    public boolean onMessage(TestEntity entity, Telegram telegram) {
         onMessageCalled = true;
         lastEntity = entity;
-        lastMessage = msg;
+        lastMessage = telegram;
         return true;
     }
 

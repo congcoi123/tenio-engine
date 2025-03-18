@@ -105,27 +105,29 @@ public final class MessageDispatcher {
    * @param deltaTime the time between consecutive frames
    */
   public void update(float deltaTime) {
-
     // get current time
     double currentTime = TimeUtility.currentTimeSeconds();
 
     // now peek at the queue to see if any telegrams need dispatching.
     // remove all telegrams from the front of the queue that have gone
     // past their sell by date
-    while (!telegrams.isEmpty() && (telegrams.last().getDelayTime() < currentTime)
-        && (telegrams.last().getDelayTime() > 0)) {
-      // read the telegram from the front of the queue
+    while (!telegrams.isEmpty()) {
+      var telegram = telegrams.first(); // Get the earliest message
 
-      var telegram = telegrams.last();
+      if (telegram.getDelayTime() > currentTime) {
+        break; // No more messages ready for dispatch
+      }
 
       // find the recipient
       var preceiver = entityManager.get(telegram.getReceiver());
 
       // send the telegram to the recipient
-      discharge(preceiver, telegram);
+      if (preceiver != null) {
+        discharge(preceiver, telegram);
+      }
 
       // remove it from the queue
-      telegrams.remove(telegrams.last());
+      telegrams.remove(telegram);
     }
   }
 
