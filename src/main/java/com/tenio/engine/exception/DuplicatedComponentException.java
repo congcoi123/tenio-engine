@@ -25,9 +25,31 @@ THE SOFTWARE.
 package com.tenio.engine.exception;
 
 /**
- * When you try to add a component twice into an entity.
+ * Exception thrown when attempting to add a duplicate component to an entity.
+ * This exception is used in the Entity Component System (ECS) to prevent
+ * multiple instances of the same component type being added to a single entity.
+ *
+ * Features:
+ * - Provides detailed error messages about the duplicate component
+ * - Includes component type information in the error message
+ * - Extends RuntimeException for unchecked exception handling
+ *
+ * Example usage:
+ * {@code
+ * if (entity.hasComponent(componentType)) {
+ *     throw new DuplicatedComponentException("Component already exists: " + componentType);
+ * }
+ * }
+ *
+ * @see com.tenio.engine.ecs.basis.Entity
+ * @see com.tenio.engine.ecs.basis.Component
+ * @since 0.5.0
  */
 public final class DuplicatedComponentException extends RuntimeException {
 
-  private static final long serialVersionUID = -1735259692237213378L;
+  private static final long serialVersionUID = -6303904123354154639L;
+
+  public DuplicatedComponentException(String message) {
+    super(message);
+  }
 }

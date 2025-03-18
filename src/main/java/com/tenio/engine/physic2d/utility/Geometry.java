@@ -45,7 +45,7 @@ public final class Geometry {
    * @return the span type
    */
   public static SpanType getWhereIsPoint(Vector2 point, Vector2 pointOnPlane, Vector2 planeNormal) {
-    var temp = Vector2.newInstance().set(pointOnPlane).sub(point);
+    Vector2 temp = Vector2.newInstance().set(pointOnPlane).sub(point);
 
     float d = temp.getDotProductValue(planeNormal);
 
@@ -70,7 +70,7 @@ public final class Geometry {
   public static float getDistanceRayCircleIntersect(Vector2 rayOrigin, Vector2 rayHeading,
                                                     Vector2 circleOrigin,
                                                     float radius) {
-    var temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
+    Vector2 temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
 
     float length = temp.getLength();
     float v = temp.getDotProductValue(rayHeading);
@@ -97,7 +97,7 @@ public final class Geometry {
   public static boolean isRayCircleIntersect(Vector2 rayOrigin, Vector2 rayHeading,
                                              Vector2 circleOrigin,
                                              float radius) {
-    var temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
+    Vector2 temp = Vector2.newInstance().set(circleOrigin).sub(rayOrigin);
 
     float length = temp.getLength();
     float v = temp.getDotProductValue(rayHeading);
@@ -116,7 +116,7 @@ public final class Geometry {
    * @return <b>false</b> if vector is within the circle, <b>true</b> otherwise
    */
   public static float[] getTangentPoints(Vector2 center, float radius, Vector2 vector) {
-    var temp = Vector2.newInstance().set(vector).sub(center);
+    Vector2 temp = Vector2.newInstance().set(vector).sub(center);
 
     float sqrLen = temp.getLengthSqr();
     float rsqr = radius * radius;
@@ -129,10 +129,10 @@ public final class Geometry {
     float root = (float) Math.sqrt(Math.abs(sqrLen - rsqr));
     float[] points = new float[4];
 
-    points[0] = center.x + radius * (radius * temp.x - temp.y * root) * invSqrLen;
-    points[1] = center.y + radius * (radius * temp.y + temp.x * root) * invSqrLen;
-    points[2] = center.x + radius * (radius * temp.x + temp.y * root) * invSqrLen;
-    points[3] = center.y + radius * (radius * temp.y - temp.x * root) * invSqrLen;
+    points[0] = center.getX() + radius * (radius * temp.getX() - temp.getY() * root) * invSqrLen;
+    points[1] = center.getY() + radius * (radius * temp.getY() + temp.getX() * root) * invSqrLen;
+    points[2] = center.getX() + radius * (radius * temp.getX() + temp.getY() * root) * invSqrLen;
+    points[3] = center.getY() + radius * (radius * temp.getY() - temp.getX() * root) * invSqrLen;
 
     return points;
   }
@@ -150,8 +150,8 @@ public final class Geometry {
   public static float getDistancePointSegment(Vector2 vectorA, Vector2 vectorB, Vector2 vectorP) {
     // if the angle is obtuse between PA and AB is obtuse then the closest
     // vertex must be vectorA
-    float dotA = (vectorP.x - vectorA.x) * (vectorB.x - vectorA.x)
-        + (vectorP.y - vectorA.y) * (vectorB.y - vectorA.y);
+    float dotA = (vectorP.getX() - vectorA.getX()) * (vectorB.getX() - vectorA.getX())
+        + (vectorP.getY() - vectorA.getY()) * (vectorB.getY() - vectorA.getY());
 
     if (dotA <= 0) {
       return Vector2.newInstance().set(vectorA).getDistanceValue(vectorP);
@@ -159,8 +159,8 @@ public final class Geometry {
 
     // if the angle is obtuse between PB and AB is obtuse then the closest
     // vertex must be vectorB
-    float dotB = (vectorP.x - vectorB.x) * (vectorA.x - vectorB.x)
-        + (vectorP.y - vectorB.y) * (vectorA.y - vectorB.y);
+    float dotB = (vectorP.getX() - vectorB.getX()) * (vectorA.getX() - vectorB.getX())
+        + (vectorP.getY() - vectorB.getY()) * (vectorA.getY() - vectorB.getY());
 
     if (dotB <= 0) {
       return Vector2.newInstance().set(vectorB).getDistanceValue(vectorP);
@@ -168,11 +168,11 @@ public final class Geometry {
 
     // calculate the point along AB that is the closest to vectorP
     // Vector2D Point = vectorA + ((vectorB - vectorA) * dotA)/(dotA + dotB);
-    var temp =
+    var temp2 =
         Vector2.newInstance().set(vectorB).sub(vectorA).mul(dotA).div(dotA + dotB).add(vectorA);
 
     // calculate the distance vectorP-Point
-    return temp.getDistanceValue(vectorP);
+    return temp2.getDistanceValue(vectorP);
   }
 
   /**
@@ -188,8 +188,8 @@ public final class Geometry {
                                                  Vector2 vectorP) {
     // if the angle is obtuse between PA and AB is obtuse then the closest
     // vertex must be vectorA
-    float dotA = (vectorP.x - vectorA.x) * (vectorB.x - vectorA.x)
-        + (vectorP.y - vectorA.y) * (vectorB.y - vectorA.y);
+    float dotA = (vectorP.getX() - vectorA.getX()) * (vectorB.getX() - vectorA.getX())
+        + (vectorP.getY() - vectorA.getY()) * (vectorB.getY() - vectorA.getY());
 
     if (dotA <= 0) {
       return Vector2.newInstance().set(vectorA).getDistanceSqrValue(vectorP);
@@ -197,8 +197,8 @@ public final class Geometry {
 
     // if the angle is obtuse between PB and AB is obtuse then the closest
     // vertex must be vectorB
-    float dotB = (vectorP.x - vectorB.x) * (vectorA.x - vectorB.x)
-        + (vectorP.y - vectorB.y) * (vectorA.y - vectorB.y);
+    float dotB = (vectorP.getX() - vectorB.getX()) * (vectorA.getX() - vectorB.getX())
+        + (vectorP.getY() - vectorB.getY()) * (vectorA.getY() - vectorB.getY());
 
     if (dotB <= 0) {
       return Vector2.newInstance().set(vectorB).getDistanceSqrValue(vectorP);
@@ -206,11 +206,11 @@ public final class Geometry {
 
     // calculate the point along AB that is the closest to vectorP
     // Vector2D Point = vectorA + ((vectorB - vectorA) * dotA)/(dotA + dotB);
-    var temp =
+    var temp2 =
         Vector2.newInstance().set(vectorB).sub(vectorA).mul(dotA).div(dotA + dotB).add(vectorA);
 
     // calculate the distance vectorP-Point
-    return temp.getDistanceSqrValue(vectorP);
+    return temp2.getDistanceSqrValue(vectorP);
   }
 
   /**
@@ -224,13 +224,13 @@ public final class Geometry {
    */
   public static boolean isTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB, Vector2 vectorC,
                                               Vector2 vectorD) {
-    float rtop = (vectorA.y - vectorC.y) * (vectorD.x - vectorC.x)
-        - (vectorA.x - vectorC.x) * (vectorD.y - vectorC.y);
-    float stop = (vectorA.y - vectorC.y) * (vectorB.x - vectorA.x)
-        - (vectorA.x - vectorC.x) * (vectorB.y - vectorA.y);
+    float rtop = (vectorA.getY() - vectorC.getY()) * (vectorD.getX() - vectorC.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorD.getY() - vectorC.getY());
+    float stop = (vectorA.getY() - vectorC.getY()) * (vectorB.getX() - vectorA.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorB.getY() - vectorA.getY());
 
-    float bot = (vectorB.x - vectorA.x) * (vectorD.y - vectorC.y)
-        - (vectorB.y - vectorA.y) * (vectorD.x - vectorC.x);
+    float bot = (vectorB.getX() - vectorA.getX()) * (vectorD.getY() - vectorC.getY())
+        - (vectorB.getY() - vectorA.getY()) * (vectorD.getX() - vectorC.getX());
 
     // parallel
     if (bot == 0) {
@@ -261,15 +261,15 @@ public final class Geometry {
   public static Vector2 getPointTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB,
                                                     Vector2 vectorC, Vector2 vectorD) {
 
-    float rtop = (vectorA.y - vectorC.y) * (vectorD.x - vectorC.x)
-        - (vectorA.x - vectorC.x) * (vectorD.y - vectorC.y);
-    float rbot = (vectorB.x - vectorA.x) * (vectorD.y - vectorC.y)
-        - (vectorB.y - vectorA.y) * (vectorD.x - vectorC.x);
+    float rtop = (vectorA.getY() - vectorC.getY()) * (vectorD.getX() - vectorC.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorD.getY() - vectorC.getY());
+    float rbot = (vectorB.getX() - vectorA.getX()) * (vectorD.getY() - vectorC.getY())
+        - (vectorB.getY() - vectorA.getY()) * (vectorD.getX() - vectorC.getX());
 
-    float stop = (vectorA.y - vectorC.y) * (vectorB.x - vectorA.x)
-        - (vectorA.x - vectorC.x) * (vectorB.y - vectorA.y);
-    float sbot = (vectorB.x - vectorA.x) * (vectorD.y - vectorC.y)
-        - (vectorB.y - vectorA.y) * (vectorD.x - vectorC.x);
+    float stop = (vectorA.getY() - vectorC.getY()) * (vectorB.getX() - vectorA.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorB.getY() - vectorA.getY());
+    float sbot = (vectorB.getX() - vectorA.getX()) * (vectorD.getY() - vectorC.getY())
+        - (vectorB.getY() - vectorA.getY()) * (vectorD.getX() - vectorC.getX());
 
     if ((rbot == 0) || (sbot == 0)) {
       // lines are parallel
@@ -301,15 +301,15 @@ public final class Geometry {
   public static float getDistanceTwoSegmentIntersect(Vector2 vectorA, Vector2 vectorB,
                                                      Vector2 vectorC, Vector2 vectorD) {
 
-    float rtop = (vectorA.y - vectorC.y) * (vectorD.x - vectorC.x)
-        - (vectorA.x - vectorC.x) * (vectorD.y - vectorC.y);
-    float rbot = (vectorB.x - vectorA.x) * (vectorD.y - vectorC.y)
-        - (vectorB.y - vectorA.y) * (vectorD.x - vectorC.x);
+    float rtop = (vectorA.getY() - vectorC.getY()) * (vectorD.getX() - vectorC.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorD.getY() - vectorC.getY());
+    float rbot = (vectorB.getX() - vectorA.getX()) * (vectorD.getY() - vectorC.getY())
+        - (vectorB.getY() - vectorA.getY()) * (vectorD.getX() - vectorC.getX());
 
-    float stop = (vectorA.y - vectorC.y) * (vectorB.x - vectorA.x)
-        - (vectorA.x - vectorC.x) * (vectorB.y - vectorA.y);
-    float sbot = (vectorB.x - vectorA.x) * (vectorD.y - vectorC.y)
-        - (vectorB.y - vectorA.y) * (vectorD.x - vectorC.x);
+    float stop = (vectorA.getY() - vectorC.getY()) * (vectorB.getX() - vectorA.getX())
+        - (vectorA.getX() - vectorC.getX()) * (vectorB.getY() - vectorA.getY());
+    float sbot = (vectorB.getX() - vectorA.getX()) * (vectorD.getY() - vectorC.getY())
+        - (vectorB.getY() - vectorA.getY()) * (vectorD.getX() - vectorC.getX());
 
     if ((rbot == 0) || (sbot == 0)) {
       // lines are parallel
@@ -400,8 +400,8 @@ public final class Geometry {
   public static boolean isTwoCirclesOverlapped(Vector2 circle1, float radius1, Vector2 circle2,
                                                float radius2) {
     float distBetweenCenters =
-        (float) Math.sqrt((circle1.x - circle2.x) * (circle1.x - circle2.x)
-            + (circle1.y - circle2.y) * (circle1.y - circle2.y));
+        (float) Math.sqrt((circle1.getX() - circle2.getX()) * (circle1.getX() - circle2.getX())
+            + (circle1.getY() - circle2.getY()) * (circle1.getY() - circle2.getY()));
 
     return (distBetweenCenters < (radius1 + radius2))
         || (distBetweenCenters < Math.abs(radius1 - radius2));
@@ -531,7 +531,7 @@ public final class Geometry {
    * @return <b>true</b> if the point is within the radius of the circle, <b>false</b> otherwise
    */
   public static boolean isPointInCircle(Vector2 center, float radius, Vector2 point) {
-    var temp = Vector2.newInstance().set(point).sub(center);
+    Vector2 temp = Vector2.newInstance().set(point).sub(center);
     float distFromCenterSquared = temp.getLengthSqr();
 
     return distFromCenterSquared < (radius * radius);
@@ -572,12 +572,11 @@ public final class Geometry {
                                                              Vector2 vectorC,
                                                              float radius,
                                                              Vector2 intersectionPoint) {
-    var temp1 = Vector2.newInstance().set(vectorB).sub(vectorA).normalize();
-    var temp2 = Vector2.newInstance().set(temp1).perpendicular();
+    Vector2 temp1 = Vector2.newInstance().set(vectorB).sub(vectorA).normalize();
+    Vector2 temp2 = Vector2.newInstance().set(temp1).perpendicular();
 
-    // move the circle into the local space defined by the vector vectorB-vectorA with origin at
-    // vectorA
-    var localPos = Transformation.pointToLocalSpace(vectorC, temp1, temp2, vectorA);
+    // transform the circle's center into the coordinate space defined by the segment AB
+    Vector2 localPos = Transformation.pointToLocalSpace(vectorC, temp1, temp2, vectorA);
 
     boolean ipFound = false;
 
@@ -585,19 +584,19 @@ public final class Geometry {
     // point vectorA so there is no intersection possible. If the local x pos minus the
     // radius is greater than length vectorA-vectorB then the circle cannot intersect the
     // line segment
-    if ((localPos.x + radius >= 0)
+    if ((localPos.getX() + radius >= 0)
         &&
-        ((localPos.x - radius) * (localPos.x - radius)
+        ((localPos.getX() - radius) * (localPos.getX() - radius)
             <= temp2.set(vectorB).getDistanceSqrValue(vectorA))) {
       // if the distance from the x-axis to the object's position is less
       // than its radius then there is a potential intersection.
-      if (Math.abs(localPos.y) < radius) {
+      if (Math.abs(localPos.getY()) < radius) {
         // now to do a line/circle intersection test. The center of the
         // circle is represented by vectorA, vectorB. The intersection points are
         // given by the formulae x = vectorA +/-sqrt(r^2-vectorB^2), y=0. We only
         // need to look at the smallest positive value of x.
-        float a = localPos.x;
-        float b = localPos.y;
+        float a = localPos.getX();
+        float b = localPos.getY();
 
         double sqrt = Math.sqrt(radius * radius - b * b);
         float ip = (float) (a - sqrt);
@@ -622,19 +621,19 @@ public final class Geometry {
   }
 
   public static boolean insideRegion(Vector2 point, Vector2 topLeft, Vector2 botRight) {
-    return !((point.x < topLeft.x) || (point.x > botRight.x) || (point.y < topLeft.y)
-        || (point.y > botRight.y));
+    return !((point.getX() < topLeft.getX()) || (point.getX() > botRight.getX()) || (point.getY() < topLeft.getY())
+        || (point.getY() > botRight.getY()));
   }
 
   public static boolean insideRegion(Vector2 point, int left, int top, int right, int bottom) {
-    return !((point.x < left) || (point.x > right) || (point.y < top) || (point.y > bottom));
+    return !((point.getX() < left) || (point.getX() > right) || (point.getY() < top) || (point.getY() > bottom));
   }
 
   // Returns true if the target position is in the field of view of the entity
   // positioned at posFirst facing in facingFirst
   public static boolean isSecondInFovoFirst(Vector2 posFirst, Vector2 facingFirst,
                                             Vector2 posSecond, float fov) {
-    var temp = Vector2.newInstance().set(posSecond).sub(posFirst).normalize();
+    Vector2 temp = Vector2.newInstance().set(posSecond).sub(posFirst).normalize();
     return facingFirst.getDotProductValue(temp) >= Math.cos(fov / 2);
   }
 
@@ -646,5 +645,43 @@ public final class Geometry {
    */
   public enum SpanType {
     PLANE_BACKSIDE, PLANE_FRONT, ON_PLANE
+  }
+
+  public static float distanceToLineSegment(Vector2 A, Vector2 B, Vector2 P) {
+    float distAB = A.getDistanceValue(B);
+    if (distAB < 0.00001f) return P.getDistanceValue(A);
+
+    float t = ((P.getX() - A.getX()) * (B.getX() - A.getX()) + 
+               (P.getY() - A.getY()) * (B.getY() - A.getY())) / 
+              (distAB * distAB);
+
+    if (t < 0) return P.getDistanceValue(A);
+    if (t > 1) return P.getDistanceValue(B);
+
+    Vector2 closest = new Vector2(
+      A.getX() + t * (B.getX() - A.getX()),
+      A.getY() + t * (B.getY() - A.getY())
+    );
+
+    return P.getDistanceValue(closest);
+  }
+
+  public static float distanceToLineSegmentSqr(Vector2 A, Vector2 B, Vector2 P) {
+    float distAB = A.getDistanceValue(B);
+    if (distAB < 0.00001f) return P.getDistanceSqrValue(A);
+
+    float t = ((P.getX() - A.getX()) * (B.getX() - A.getX()) + 
+               (P.getY() - A.getY()) * (B.getY() - A.getY())) / 
+              (distAB * distAB);
+
+    if (t < 0) return P.getDistanceSqrValue(A);
+    if (t > 1) return P.getDistanceSqrValue(B);
+
+    Vector2 closest = new Vector2(
+      A.getX() + t * (B.getX() - A.getX()),
+      A.getY() + t * (B.getY() - A.getY())
+    );
+
+    return P.getDistanceSqrValue(closest);
   }
 }

@@ -123,13 +123,6 @@ class CellSpacePartitionTest {
 
   @Test
   void testClearCells() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by clearCells()
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
-
     (new CellSpacePartition<BaseGameEntity>(10.0f, 10.0f, 1, 1, 3)).clearCells();
   }
 

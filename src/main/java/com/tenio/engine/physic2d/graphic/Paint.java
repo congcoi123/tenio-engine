@@ -33,31 +33,80 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * This class provides some methods for painting objects to a screen.
+ * A utility class for rendering graphics in a 2D game environment.
+ *
+ * <p>This class provides methods for drawing various shapes, lines, and text on a graphics context.
+ * It supports different colors, line styles, and text formatting options.
+ *
+ * <p>Example usage:
+ * {@code
+ * Paint paint = new Paint();
+ * List<Vector2> path = getPathPoints();
+ * paint.drawPath(path);
+ * paint.drawCircle(position, radius);
+ * paint.drawText("Score: " + score, x, y);
+ * }
+ *
+ * @see com.tenio.engine.physic2d.math.Vector2
+ * @see java.awt.Graphics2D
+ * @since 0.5.0
  */
 public final class Paint {
 
+  /**
+   * The singleton instance of the Paint class.
+   */
   private static final Paint instance = new Paint();
 
-  // These objects for temporary calculations
+  /**
+   * Temporary vectors used for calculations in various drawing operations.
+   */
   private final Vector2 temp1 = Vector2.newInstance();
   private final Vector2 temp2 = Vector2.newInstance();
   private final Vector2 temp3 = Vector2.newInstance();
   private final Vector2 temp4 = Vector2.newInstance();
+
   /**
-   * It is used for rendering an object in shape.
+   * Polygon instance used for shape rendering operations.
    */
   private final Polygon polygon = new Polygon();
-  private final Color bgTextColor;
-  private Graphics brush;
-  private Color penColor;
-  private Color bgColor;
+
   /**
-   * The drawing text has a background color or not.
+   * Background color for text rendering.
+   */
+  private final Color bgTextColor;
+
+  /**
+   * The current graphics context for drawing operations.
+   */
+  private Graphics brush;
+
+  /**
+   * The current pen color used for drawing operations.
+   */
+  private Color penColor;
+
+  /**
+   * The current background color used for filling operations.
+   */
+  private Color bgColor;
+
+  /**
+   * Flag indicating whether text should be drawn with an opaque background.
    */
   private boolean bgTextOpaque;
+
+  /**
+   * The current color used for text rendering.
+   */
   private Color textColor;
 
+  /**
+   * Private constructor to enforce singleton pattern.
+   * Initializes default colors and states.
+   * 
+   * @throws UnsupportedOperationException if attempting to create multiple instances
+   */
   private Paint() {
     if (Objects.nonNull(instance)) {
       throw new UnsupportedOperationException("Could not recreate this instance");
@@ -66,22 +115,26 @@ public final class Paint {
     brush = null;
     penColor = Color.BLACK;
     bgColor = null;
-
     bgTextOpaque = false;
     textColor = Color.BLACK;
     bgTextColor = Color.WHITE;
-  } // prevent creation manually
+  }
 
-  // preventing Singleton object instantiation from outside
-  // creates multiple instance if two thread access this method simultaneously
+  /**
+   * Returns the singleton instance of the Paint class.
+   * This method is thread-safe as the instance is created during class initialization.
+   *
+   * @return the singleton Paint instance
+   */
   public static Paint getInstance() {
     return instance;
   }
 
   /**
-   * Call this before drawing.
+   * Initializes drawing operations with the specified graphics context.
+   * This method must be called before any drawing operations.
    *
-   * @param graphic see {@link Graphics}
+   * @param graphic the graphics context to use for drawing
    */
   public void startDrawing(Graphics graphic) {
     brush = graphic;
@@ -91,14 +144,16 @@ public final class Paint {
   // -----------------------------------------------
 
   /**
-   * Draw a text at a position.
+   * Draws text at the specified position with current text settings.
+   * If text background is enabled ({@link #enableOpaqueText}), draws a background
+   * rectangle before rendering the text.
    *
-   * @param x    position in x
-   * @param y    position in y
-   * @param text the text content
+   * @param x the x-coordinate where to draw the text
+   * @param y the y-coordinate where to draw the text
+   * @param text the text to draw
    */
   public void drawTextAtPosition(int x, int y, String text) {
-    final var back = brush.getColor();
+    final Color back = brush.getColor();
     y += getFontHeight() - 2;
     if (bgTextOpaque) {
       FontMetrics fm = brush.getFontMetrics();
@@ -110,22 +165,54 @@ public final class Paint {
     brush.setColor(back);
   }
 
+  /**
+   * Draws text at the specified floating-point coordinates.
+   * Coordinates are converted to integers before drawing.
+   *
+   * @param x the x-coordinate where to draw the text
+   * @param y the y-coordinate where to draw the text
+   * @param text the text to draw
+   */
   public void drawTextAtPosition(float x, float y, String text) {
     drawTextAtPosition((int) x, (int) y, text);
   }
 
+  /**
+   * Draws text at the position specified by a Vector2.
+   *
+   * @param position the position where to draw the text
+   * @param text the text to draw
+   */
   public void drawTextAtPosition(Vector2 position, String text) {
-    drawTextAtPosition((int) position.x, (int) position.y, text);
+    drawTextAtPosition((int) position.getX(), (int) position.getY(), text);
   }
 
+  /**
+   * Enables or disables opaque text background.
+   * When enabled, text is drawn with a solid background color.
+   *
+   * @param enabled true to enable opaque text background, false to disable
+   */
   public void enableOpaqueText(boolean enabled) {
     bgTextOpaque = enabled;
   }
 
+  /**
+   * Sets the color used for text rendering.
+   *
+   * @param color the color to use for text
+   */
   public void setTextColor(Color color) {
     textColor = color;
   }
 
+  /**
+   * Sets the text color using RGB components.
+   *
+   * @param r the red component (0-255)
+   * @param g the green component (0-255)
+   * @param b the blue component (0-255)
+   */
   public void setTextColor(int r, int g, int b) {
     textColor = new Color(r, g, b);
   }
@@ -142,32 +229,72 @@ public final class Paint {
     return brush.getFontMetrics().getHeight();
   }
 
+  /**
+   * Gets the width of the specified text string when rendered with the current font.
+   *
+   * @param text the text to measure
+   * @return the width of the text in pixels
+   */
+  public int getTextWidth(String text) {
+    return brush.getFontMetrics().stringWidth(text);
+  }
+
   // ------------------ Draw Pixels ----------------
   // -----------------------------------------------
 
-  public void drawDot(Vector2 position, Color color) {
-    drawDot((int) position.x, (int) position.y, color);
+  /**
+   * Draws a dot at the specified integer coordinates.
+   *
+   * @param x the x-coordinate of the dot
+   * @param y the y-coordinate of the dot
+   */
+  public void drawDot(int x, int y) {
+    brush.drawLine(x, y, x, y);
   }
 
-  public void drawDot(int x, int y, Color color) {
-    brush.setColor(bgColor);
-    brush.fillRect(x, y, 0, 0);
+  /**
+   * Draws a dot at the specified floating-point coordinates.
+   * Coordinates are converted to integers before drawing.
+   *
+   * @param x the x-coordinate of the dot
+   * @param y the y-coordinate of the dot
+   */
+  public void drawDot(float x, float y) {
+    drawDot((int) x, (int) y);
+  }
+
+  /**
+   * Draws a dot at the position specified by a Vector2.
+   *
+   * @param position the position where to draw the dot
+   */
+  public void drawDot(Vector2 position) {
+    drawDot((int) position.getX(), (int) position.getY());
   }
 
   // ------------------ Draw Line ------------------
   // -----------------------------------------------
 
+  /**
+   * Draws a line between two points.
+   *
+   * @param fromX the x-coordinate of the start point
+   * @param fromY the y-coordinate of the start point
+   * @param toX   the x-coordinate of the end point
+   * @param toY   the y-coordinate of the end point
+   */
+  public void drawLine(float fromX, float fromY, float toX, float toY) {
+    brush.drawLine((int)fromX, (int)fromY, (int)toX, (int)toY);
+  }
+
+  /**
+   * Draws a line between two points.
+   *
+   * @param from the start point
+   * @param to   the end point
+   */
   public void drawLine(Vector2 from, Vector2 to) {
-    drawLine(from.x, from.y, to.x, to.y);
-  }
-
-  public void drawLine(int a, int b, int x, int y) {
-    brush.setColor(penColor);
-    brush.drawLine(a, b, x, y);
-  }
-
-  public void drawLine(float a, float b, float x, float y) {
-    drawLine((int) a, (int) b, (int) x, (int) y);
+    drawLine((float)from.getX(), (float)from.getY(), (float)to.getX(), (float)to.getY());
   }
 
   /**
@@ -183,8 +310,8 @@ public final class Paint {
 
     polygon.reset();
 
-    for (var v : points) {
-      polygon.addPoint((int) v.x, (int) v.y);
+    for (Vector2 v : points) {
+      polygon.addPoint((int) v.getX(), (int) v.getY());
     }
     brush.setColor(penColor);
     brush.drawPolygon(polygon);
@@ -199,28 +326,28 @@ public final class Paint {
    */
   public void drawLineWithArrow(Vector2 from, Vector2 to, float size) {
     temp1.set(to).sub(from).normalize();
-    var norm = temp1;
+    Vector2 norm = temp1;
 
     // calculate where the arrow is attached
     temp2.set(norm).mul(size);
     temp3.set(to).sub(temp2);
-    var crossingPoint = temp3;
+    Vector2 crossingPoint = temp3;
 
     // calculate the two extra points required to make the arrowhead
     temp4.set(norm.perpendicular()).mul(0.4f * size).add(crossingPoint);
-    final var arrowPoint1 = temp4;
-    final var arrowPoint2 = temp4;
+    final Vector2 arrowPoint1 = temp4;
+    final Vector2 arrowPoint2 = temp4;
 
     // draw the line
     brush.setColor(penColor);
-    brush.drawLine((int) from.x, (int) from.y, (int) crossingPoint.x, (int) crossingPoint.y);
+    brush.drawLine((int) from.getX(), (int) from.getY(), (int) crossingPoint.getX(), (int) crossingPoint.getY());
 
     // draw the arrowhead (filled with the currently selected brush)
     polygon.reset();
 
-    polygon.addPoint((int) arrowPoint1.x, (int) arrowPoint1.y);
-    polygon.addPoint((int) arrowPoint2.x, (int) arrowPoint2.y);
-    polygon.addPoint((int) to.x, (int) to.y);
+    polygon.addPoint((int) arrowPoint1.getX(), (int) arrowPoint1.getY());
+    polygon.addPoint((int) arrowPoint2.getX(), (int) arrowPoint2.getY());
+    polygon.addPoint((int) to.getX(), (int) to.getY());
 
     if (Objects.nonNull(bgColor)) {
       brush.setColor(bgColor);
@@ -229,16 +356,38 @@ public final class Paint {
   }
 
   /**
-   * Draw a cross.
+   * Draws a cross (X) centered at the specified integer coordinates.
+   * The cross size is determined by the CROSS_SIZE constant.
    *
-   * @param position the position
-   * @param diameter the diameter
+   * @param x the x-coordinate of the cross center
+   * @param y the y-coordinate of the cross center
    */
-  public void drawCross(Vector2 position, int diameter) {
-    drawLine((int) position.x - diameter, (int) position.y - diameter, (int) position.x + diameter,
-        (int) position.y + diameter);
-    drawLine((int) position.x - diameter, (int) position.y + diameter, (int) position.x + diameter,
-        (int) position.y - diameter);
+  public void drawCross(int x, int y) {
+    final int CROSS_SIZE = 5;
+    Color oldColor = brush.getColor();
+    brush.setColor(penColor);
+    brush.drawLine(x - CROSS_SIZE, y - CROSS_SIZE, x + CROSS_SIZE, y + CROSS_SIZE);
+    brush.drawLine(x - CROSS_SIZE, y + CROSS_SIZE, x + CROSS_SIZE, y - CROSS_SIZE);
+    brush.setColor(oldColor);
+  }
+
+  /**
+   * Draws a cross (X) centered at the specified floating-point coordinates.
+   *
+   * @param x the x-coordinate of the cross center
+   * @param y the y-coordinate of the cross center
+   */
+  public void drawCross(float x, float y) {
+    drawCross((int) x, (int) y);
+  }
+
+  /**
+   * Draws a cross (X) centered at the position specified by a Vector2.
+   *
+   * @param position the center position of the cross
+   */
+  public void drawCross(Vector2 position) {
+    drawCross((int) position.getX(), (int) position.getY());
   }
 
   // ------------------ Draw Geometry ------------------
@@ -254,7 +403,7 @@ public final class Paint {
    * @param height height value
    */
   public void fillRect(Color color, int left, int top, int width, int height) {
-    var old = brush.getColor();
+    Color old = brush.getColor();
     brush.setColor(color);
     brush.fillRect(left, top, width, height);
     brush.setColor(old);
@@ -287,7 +436,7 @@ public final class Paint {
   }
 
   /**
-   * Draw a closed shape.
+   * Draws a closed shape.
    *
    * @param points the list of points
    */
@@ -296,7 +445,7 @@ public final class Paint {
     polygon.reset();
 
     for (Vector2 p : points) {
-      polygon.addPoint((int) p.x, (int) p.y);
+      polygon.addPoint((int) p.getX(), (int) p.getY());
     }
     brush.setColor(penColor);
     brush.drawPolygon(polygon);
@@ -305,37 +454,216 @@ public final class Paint {
     }
   }
 
-  public void drawCircle(Vector2 position, float radius) {
-    drawCircle(position.x, position.y, radius);
+  /**
+   * Draws a circle.
+   *
+   * @param x      the x-coordinate of the center
+   * @param y      the y-coordinate of the center
+   * @param radius the radius of the circle
+   */
+  public void drawCircle(float x, float y, float radius) {
+    brush.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
   }
 
   /**
-   * Draw a circle.
+   * Draws a circle.
    *
-   * @param x      the x point
-   * @param y      the y point
-   * @param radius the radius
+   * @param position the center point
+   * @param radius   the radius of the circle
    */
-  public void drawCircle(float x, float y, float radius) {
-    brush.setColor(penColor);
-    brush.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2),
-        (int) (radius * 2));
-    if (Objects.nonNull(bgColor)) {
-      brush.setColor(bgColor);
-      brush.fillOval((int) (x - radius + 1), (int) (y - radius + 1), (int) (radius * 2 - 1),
-          (int) (radius * 2 - 1));
+  public void drawCircle(Vector2 position, float radius) {
+    drawCircle((float)position.getX(), (float)position.getY(), radius);
+  }
+
+  /**
+   * Draws a filled circle with the specified center and radius.
+   *
+   * @param x the x-coordinate of the circle center
+   * @param y the y-coordinate of the circle center
+   * @param radius the radius of the circle in pixels
+   */
+  public void drawFillCircle(int x, int y, int radius) {
+    brush.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+  }
+
+  /**
+   * Draws a filled circle with floating-point center coordinates and radius.
+   *
+   * @param x the x-coordinate of the circle center
+   * @param y the y-coordinate of the circle center
+   * @param radius the radius of the circle
+   */
+  public void drawFillCircle(float x, float y, float radius) {
+    drawFillCircle((int) x, (int) y, (int) radius);
+  }
+
+  /**
+   * Draws a filled circle centered at the specified Vector2 position.
+   *
+   * @param position the center position of the circle
+   * @param radius the radius of the circle
+   */
+  public void drawFillCircle(Vector2 position, float radius) {
+    drawFillCircle((int) position.getX(), (int) position.getY(), (int) radius);
+  }
+
+  /**
+   * Sets the current pen color for drawing operations.
+   *
+   * @param color the color to use for drawing
+   */
+  public void setPenColor(Color color) {
+    penColor = color;
+    brush.setColor(color);
+  }
+
+  /**
+   * Sets the pen color using RGB components.
+   *
+   * @param r the red component (0-255)
+   * @param g the green component (0-255)
+   * @param b the blue component (0-255)
+   */
+  public void setPenColor(int r, int g, int b) {
+    setPenColor(new Color(r, g, b));
+  }
+
+  /**
+   * Sets the background color for filling operations.
+   *
+   * @param color the color to use for filling
+   */
+  public void setBgColor(Color color) {
+    bgColor = color;
+  }
+
+  /**
+   * Sets the background color using RGB components.
+   *
+   * @param r the red component (0-255)
+   * @param g the green component (0-255)
+   * @param b the blue component (0-255)
+   */
+  public void setBgColor(int r, int g, int b) {
+    setBgColor(new Color(r, g, b));
+  }
+
+  /**
+   * Gets the current pen color used for drawing operations.
+   *
+   * @return the current pen color
+   */
+  public Color getPenColor() {
+    return penColor;
+  }
+
+  /**
+   * Gets the current background color used for filling operations.
+   *
+   * @return the current background color
+   */
+  public Color getBgColor() {
+    return bgColor;
+  }
+
+  /**
+   * Gets the current text color used for text rendering.
+   *
+   * @return the current text color
+   */
+  public Color getTextColor() {
+    return textColor;
+  }
+
+  /**
+   * Gets the current background color used for text rendering.
+   *
+   * @return the current text background color
+   */
+  public Color getBgTextColor() {
+    return bgTextColor;
+  }
+
+  /**
+   * Checks if text is currently being rendered with an opaque background.
+   *
+   * @return true if text has an opaque background, false otherwise
+   */
+  public boolean isBgTextOpaque() {
+    return bgTextOpaque;
+  }
+
+  /**
+   * Gets the current graphics context used for drawing operations.
+   *
+   * @return the current graphics context
+   */
+  public Graphics getBrush() {
+    return brush;
+  }
+
+  /**
+   * Draws a dotted line between two points.
+   *
+   * @param fromX the x-coordinate of the start point
+   * @param fromY the y-coordinate of the start point
+   * @param toX   the x-coordinate of the end point
+   * @param toY   the y-coordinate of the end point
+   */
+  public void drawDottedLine(float fromX, float fromY, float toX, float toY) {
+    float dx = toX - fromX;
+    float dy = toY - fromY;
+    float len = (float)Math.sqrt(dx * dx + dy * dy);
+    float dotSpacing = 5.0f;  // Adjust this value to change dot spacing
+    
+    if (len > 0) {
+      dx /= len;
+      dy /= len;
+      float x = fromX;
+      float y = fromY;
+      
+      for (float i = 0; i < len; i += dotSpacing * 2) {
+        drawDot((int)x, (int)y);
+        x += dx * dotSpacing * 2;
+        y += dy * dotSpacing * 2;
+      }
     }
   }
 
-  public void drawCircle(int x, int y, float radius) {
-    drawCircle((float) x, (float) y, radius);
+  /**
+   * Draws a dotted line between two points.
+   *
+   * @param from the start point
+   * @param to   the end point
+   */
+  public void drawDottedLine(Vector2 from, Vector2 to) {
+    drawDottedLine((float)from.getX(), (float)from.getY(), (float)to.getX(), (float)to.getY());
   }
 
-  public void setPenColor(Color color) {
-    penColor = color;
+  /**
+   * Draws a closed shape defined by a series of points.
+   *
+   * @param points the array of points defining the shape
+   */
+  public void drawClosedShape(Vector2[] points) {
+    if (points == null || points.length < 2) return;
+    
+    for (int i = 0; i < points.length - 1; i++) {
+      drawLine(points[i], points[i + 1]);
+    }
+    drawLine(points[points.length - 1], points[0]);
   }
 
-  public void setBgColor(Color color) {
-    bgColor = color;
+  /**
+   * Draws a cross at the specified position.
+   *
+   * @param position the center point of the cross
+   * @param size     the size of the cross
+   */
+  public void drawCross(Vector2 position, float size) {
+    float x = position.getX();
+    float y = position.getY();
+    drawLine(x - size, y - size, x + size, y + size);
+    drawLine(x - size, y + size, x + size, y - size);
   }
 }

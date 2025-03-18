@@ -27,29 +27,67 @@ package com.tenio.engine.physic2d.math;
 import java.util.List;
 
 /**
- * A 3x3 <a href="http://en.wikipedia.org/wiki/Row-major_order">row major</a>
- * matrix. It's useful for 2D transforms.<br>
- * More detail in <a href=
- * "https://medium.com/swlh/understanding-3d-matrix-transforms-with-pixijs-c76da3f8bd8">this
- * document</a>.
+ * A 3x3 matrix class designed for 2D transformations and coordinate space operations.
+ * This class provides functionality for common matrix operations including:
+ * - Matrix multiplication
+ * - Transformation operations (translation, rotation, scaling)
+ * - Identity matrix creation
+ * - Matrix transposition
+ * - Determinant calculation
+ * <p>
+ * The matrix is stored in row-major order and can be used for:
+ * - 2D affine transformations
+ * - Coordinate space conversions
+ * - Composite transformations through matrix multiplication
+ * <p>
+ * Example usage:
+ * <pre>
+ * Matrix3 transform = Matrix3.identity();
+ * transform = transform.translate(2.0f, 3.0f);
+ * transform = transform.rotate(45.0f);
+ * Vector2 transformed = transform.transformVector(new Vector2(1.0f, 1.0f));
+ * </pre>
+ *
+ * @see Vector2
+ * @since 0.5.0
  */
 public final class Matrix3 {
 
-  // The temporary object for calculations
+  /**
+   * The main matrix storage for transformation operations.
+   */
   private final Matrix matrix = new Matrix();
+
+  /**
+   * Temporary matrix used for intermediate calculations.
+   */
   private final Matrix tempMatrix = new Matrix();
 
+  /**
+   * Private constructor to enforce factory method usage.
+   * Initializes the matrix to an identity matrix.
+   */
   private Matrix3() {
-    // initialize the matrix to an identity matrix
     initialize();
   }
 
+  /**
+   * Creates a new Matrix3 instance initialized as an identity matrix.
+   *
+   * @return a new Matrix3 instance
+   */
   public static Matrix3 newInstance() {
     return new Matrix3();
   }
 
   /**
-   * Create an identity matrix.
+   * Initializes this matrix to an identity matrix.
+   * The identity matrix has ones on the main diagonal and zeros elsewhere:
+   * <pre>
+   * | 1 0 0 |
+   * | 0 1 0 |
+   * | 0 0 1 |
+   * </pre>
    */
   public void initialize() {
     matrix.p11 = 1;
@@ -63,46 +101,92 @@ public final class Matrix3 {
     matrix.p33 = 1;
   }
 
+  /**
+   * Sets the value at position (1,1) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p11(float val) {
     matrix.p11 = val;
   }
 
+  /**
+   * Sets the value at position (1,2) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p12(float val) {
     matrix.p12 = val;
   }
 
+  /**
+   * Sets the value at position (1,3) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p13(float val) {
     matrix.p13 = val;
   }
 
+  /**
+   * Sets the value at position (2,1) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p21(float val) {
     matrix.p21 = val;
   }
 
+  /**
+   * Sets the value at position (2,2) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p22(float val) {
     matrix.p22 = val;
   }
 
+  /**
+   * Sets the value at position (2,3) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p23(float val) {
     matrix.p23 = val;
   }
 
+  /**
+   * Sets the value at position (3,1) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p31(float val) {
     matrix.p31 = val;
   }
 
+  /**
+   * Sets the value at position (3,2) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p32(float val) {
     matrix.p32 = val;
   }
 
+  /**
+   * Sets the value at position (3,3) in the matrix.
+   *
+   * @param val the value to set
+   */
   public void p33(float val) {
     matrix.p33 = val;
   }
 
   /**
-   * Multiply two matrices together by rows.
+   * Multiplies this matrix by another matrix using row-major multiplication.
+   * The result is stored in this matrix.
    *
-   * @param matrix see {@link Matrix}
+   * @param matrix the matrix to multiply with
    */
   private void mul(final Matrix matrix) {
     // first
@@ -142,111 +226,85 @@ public final class Matrix3 {
   }
 
   /**
-   * Applies a 2D transformation matrix to a list of Vector2Ds.
+   * Applies this transformation matrix to a list of 2D vectors.
+   * Each vector in the list is transformed in place.
    *
-   * @param points see {@link Vector2}
+   * @param points the list of vectors to transform
    */
   public void transformVector2Ds(List<Vector2> points) {
     points.forEach(vector -> {
-      float tempX = (matrix.p11 * vector.x) + (matrix.p21 * vector.y) + (matrix.p31);
-      float tempY = (matrix.p12 * vector.x) + (matrix.p22 * vector.y) + (matrix.p32);
-      vector.x = tempX;
-      vector.y = tempY;
+      float tempX = (matrix.p11 * vector.getX()) + (matrix.p21 * vector.getY()) + (matrix.p31);
+      float tempY = (matrix.p12 * vector.getX()) + (matrix.p22 * vector.getY()) + (matrix.p32);
+      vector.setX(tempX);
+      vector.setY(tempY);
     });
   }
 
   /**
-   * Applies a 2D transformation matrix to a single Vector2D.
+   * Applies this transformation matrix to a single 2D vector.
+   * The vector is transformed in place.
    *
-   * @param point see {@link Vector2}
+   * @param point the vector to transform
    */
   public void transformVector2D(Vector2 point) {
-    float tempX = (matrix.p11 * point.x) + (matrix.p21 * point.y) + (matrix.p31);
-    float tempY = (matrix.p12 * point.x) + (matrix.p22 * point.y) + (matrix.p32);
+    float tempX = (matrix.p11 * point.getX()) + (matrix.p21 * point.getY()) + (matrix.p31);
+    float tempY = (matrix.p12 * point.getX()) + (matrix.p22 * point.getY()) + (matrix.p32);
 
-    point.x = tempX;
-    point.y = tempY;
+    point.setX(tempX);
+    point.setY(tempY);
   }
 
   /**
-   * Create a transformation matrix.
+   * Creates and applies a translation transformation.
+   * This will move points by the specified x and y distances.
    *
-   * @param x new x value
-   * @param y new y value
+   * @param x the distance to move along the x-axis
+   * @param y the distance to move along the y-axis
    */
   public void translate(float x, float y) {
-    /*
-     * matrix._11 = 1; matrix._12 = 0; matrix._13 = 0;
-     * matrix._21 = 0; matrix._22 = 1; matrix._23 = 0;
-     * matrix._31 = x; matrix._32 = y; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
     tempMatrix.set(1, 0, 0, 0, 1, 0, x, y, 1);
-
-    // and multiply
     mul(tempMatrix);
   }
 
   /**
-   * Create a scale matrix.
+   * Creates and applies a scaling transformation.
+   * This will scale points by the specified factors in x and y directions.
    *
-   * @param xscale scale horizon
-   * @param yscale scale vertical
+   * @param xscale the scaling factor for the x-axis
+   * @param yscale the scaling factor for the y-axis
    */
   public void scale(float xscale, float yscale) {
-    /*
-     * matrix._11 = xscale; matrix._12 = 0; matrix._13 = 0;
-     * matrix._21 = 0; matrix._22 = yscale; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
     tempMatrix.set(xscale, 0, 0, 0, yscale, 0, 0, 0, 1);
-
-    // and multiply
     mul(tempMatrix);
   }
 
   /**
-   * Create a rotation matrix.
+   * Creates and applies a rotation transformation.
+   * This will rotate points by the specified angle in radians.
    *
-   * @param rotation rotation value
+   * @param rotation the rotation angle in radians
    */
   public void rotate(float rotation) {
     float sin = (float) Math.sin(rotation);
     float cos = (float) Math.cos(rotation);
 
-    /*
-     * matrix._11 = cos; matrix._12 = sin; matrix._13 = 0;
-     * matrix._21 = -sin; matrix._22 = cos; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
-    tempMatrix.set(cos, sin, 0, -sin, cos, 0, 0, 0, 1);
-
-    // and multiply
+    tempMatrix.set(cos, -sin, 0, sin, cos, 0, 0, 0, 1);
     mul(tempMatrix);
   }
 
   /**
-   * Create a rotation matrix from a 2D vector.
+   * Creates and applies a rotation transformation based on forward and side vectors.
+   * This is useful for orienting objects in 2D space.
    *
-   * @param forward forward vector
-   * @param side    side vector
+   * @param forward the forward direction vector
+   * @param side the side direction vector
    */
   public void rotate(Vector2 forward, Vector2 side) {
-    /*
-     * matrix._11 = forward.x; matrix._12 = forward.y; matrix._13 = 0;
-     * matrix._21 = side.x; matrix._22 = side.y; matrix._23 = 0;
-     * matrix._31 = 0; matrix._32 = 0; matrix._33 = 1;
-     */
-
     tempMatrix.initialize();
-    tempMatrix.set(forward.x, forward.y, 0, side.x, side.y, 0, 0, 0, 1);
-
-    // and multiply
+    tempMatrix.set(forward.getX(), -side.getX(), 0, forward.getY(), side.getY(), 0, 0, 0, 1);
     mul(tempMatrix);
   }
 

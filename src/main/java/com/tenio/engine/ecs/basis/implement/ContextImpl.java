@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 package com.tenio.engine.ecs.basis.implement;
 
-import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.Component;
 import com.tenio.engine.ecs.basis.Context;
 import com.tenio.engine.ecs.basis.Entity;
@@ -32,7 +31,6 @@ import com.tenio.engine.ecs.pool.ComponentPool;
 import com.tenio.engine.ecs.pool.EntityPool;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A context manages the life-cycle of entities and groups. You can create and
@@ -40,37 +38,33 @@ import java.util.Objects;
  *
  * @see Context
  */
-public class ContextImpl<T extends EntityImpl> implements Context<T> {
+public final class ContextImpl<T extends Entity> implements Context<T> {
 
-  private final Map<String, T> entities;
+  private static final int DEFAULT_NUMBER_ELEMENTS_POOL = 100;
+
   private final ContextInfo contextInfo;
-  private final ElementPool<Entity> entityPool;
-  private final ElementPool<Component>[] componentPools;
+  private final Map<Class<? extends Component>, ComponentPool<? extends Component>> componentPools;
+  private final EntityPool<T> entityPool;
+  private final Map<String, T> entities;
 
   /**
-   * Initialization.
+   * Creates a new context implementation with the specified initial size.
    *
-   * @param contextInfo the context information
-   * @param clazz       the class of element
+   * @param initialSize the initial size for entity and component pools
    */
-  public ContextImpl(ContextInfo contextInfo, Class<T> clazz) {
-    this.contextInfo = contextInfo;
-    entities = new HashMap<>();
-    entityPool = new EntityPool(clazz, this.contextInfo);
-    componentPools = new ComponentPool[getContextInfo().getNumberComponents()];
-
-    for (int i = 0; i < this.contextInfo.getNumberComponents(); i++) {
-      if (Objects.nonNull(this.contextInfo.getComponentTypes()[i])) {
-        componentPools[i] = new ComponentPool(this.contextInfo.getComponentTypes()[i]);
-      }
-    }
+  @SuppressWarnings("unchecked")
+  public ContextImpl(int initialSize) {
+    this.contextInfo = new ContextInfo(initialSize);
+    this.componentPools = new HashMap<>();
+    this.entityPool = new EntityPool<>((Class<T>) EntityImpl.class, initialSize);
+    this.entities = new HashMap<>();
   }
 
   @Override
   public T createEntity() {
-    @SuppressWarnings("unchecked")
     var entity = (T) entityPool.get();
     entity.setComponentPools(componentPools);
+    entity.setContextInfo(contextInfo);
     entities.put(entity.getId(), entity);
     return entity;
   }
@@ -109,18 +103,28 @@ public class ContextImpl<T extends EntityImpl> implements Context<T> {
 
   @Override
   public void destroyAllEntities() {
-    entities.values().forEach(EntityImpl::reset);
+    for (T entity : entities.values()) {
+      entity.reset();
+    }
     entities.clear();
   }
 
   @Override
   public void reset() {
-    destroyAllEntities();
-    entityPool.cleanup();
-    for (var componentPool : componentPools) {
-      if (Objects.nonNull(componentPool)) {
-        componentPool.cleanup();
-      }
+    for (T entity : entities.values()) {
+      entity.reset();
     }
+    componentPools.clear();
+    entities.clear();
+  }
+
+  @Override
+  public <C extends Component> ComponentPool<C> getComponentPool(Class<C> componentClass) {
+    if (!componentPools.containsKey(componentClass)) {
+      componentPools.put(componentClass, new ComponentPool<>(componentClass, DEFAULT_NUMBER_ELEMENTS_POOL));
+    }
+    @SuppressWarnings("unchecked")
+    ComponentPool<C> pool = (ComponentPool<C>) componentPools.get(componentClass);
+    return pool;
   }
 }

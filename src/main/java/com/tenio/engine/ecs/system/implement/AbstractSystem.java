@@ -36,6 +36,11 @@ public abstract class AbstractSystem<T extends Entity> {
 
   private final Context<T> context;
 
+  /**
+   * Creates a new abstract system with the specified context.
+   *
+   * @param context the context this system will operate on
+   */
   public AbstractSystem(Context<T> context) {
     this.context = context;
   }

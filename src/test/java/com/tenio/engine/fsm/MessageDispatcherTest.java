@@ -1,72 +1,109 @@
 package com.tenio.engine.fsm;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
+import com.tenio.engine.fsm.entity.AbstractEntity;
+import com.tenio.engine.fsm.entity.Telegram;
 import com.tenio.engine.message.ExtraMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class MessageDispatcherTest {
-  @Test
-  void testConstructor() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     MessageDispatcher.telegrams
-    //     MessageDispatcher.entityManager
-    //     MessageDispatcher.messageListeners
 
-    new MessageDispatcher(new EntityManager());
-  }
+    private MessageDispatcher dispatcher;
+    private MessageListener messageListener;
+    
+    @Mock
+    private EntityManager mockEntityManager;
+    
+    @Mock
+    private AbstractEntity mockReceiver;
+    
+    @Mock
+    private ExtraMessage mockInfo;
+    
+    @Mock
+    private AbstractEntity mockSender;
 
-  @Test
-  void testDispatchMessage() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by dispatchMessage(double, String, String, int, ExtraMessage)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    private static final String SENDER_ID = "sender";
+    private static final String RECEIVER_ID = "receiver";
+    private static final int MSG_TYPE = 1;
 
-    (new MessageDispatcher(new EntityManager())).dispatchMessage(10.0, "Sender", "Receiver", 1,
-        mock(ExtraMessage.class));
-  }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        dispatcher = new MessageDispatcher(mockEntityManager);
+        messageListener = mock(MessageListener.class);
+        dispatcher.listen(messageListener);
+    }
 
-  @Test
-  void testUpdate() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by update(float)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+    @Test
+    void whenDispatchingImmediateMessage_shouldDeliverImmediately() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
 
-    (new MessageDispatcher(new EntityManager())).update(0.5f);
-  }
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
-  @Test
-  void testListen() {
-    // TODO: This test is incomplete.
-    //   Reason: R004 No meaningful assertions found.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Make sure that fields modified by listen(MessageListener)
-    //   have package-private, protected, or public getters.
-    //   See https://diff.blue/R004 to resolve this issue.
+        // Then
+        verify(mockReceiver).handleMessage(any(Telegram.class));
+    }
 
-    (new MessageDispatcher(new EntityManager())).listen(mock(MessageListener.class));
-  }
+    @Test
+    void whenDispatchingDelayedMessage_shouldQueueMessage() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        double delay = 1.0;
 
-  @Test
-  void testClear() {
-    // TODO: This test is incomplete.
-    //   Reason: R002 Missing observers.
-    //   Diffblue Cover was unable to create an assertion.
-    //   Add getters for the following fields or make them package-private:
-    //     MessageDispatcher.entityManager
-    //     MessageDispatcher.messageListeners
-    //     MessageDispatcher.telegrams
+        // When
+        dispatcher.dispatchMessage(delay, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
 
-    (new MessageDispatcher(new EntityManager())).clear();
-  }
+        // Then
+        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
+    }
+
+    @Test
+    void whenReceiverNotFound_shouldNotDispatchMessage() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(null);
+
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // Then
+        verify(mockReceiver, never()).handleMessage(any(Telegram.class));
+    }
+
+    @Test
+    void whenMessageNotHandled_shouldNotifyListeners() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(false);
+
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // Then
+        verify(mockReceiver).handleMessage(any(Telegram.class));
+    }
+
+    @Test
+    void whenMessageDispatched_shouldBeDelivered() {
+        // Given
+        when(mockEntityManager.get(RECEIVER_ID)).thenReturn(mockReceiver);
+        when(mockReceiver.handleMessage(any(Telegram.class))).thenReturn(true);
+
+        // When
+        dispatcher.dispatchMessage(0, SENDER_ID, RECEIVER_ID, MSG_TYPE, mockInfo);
+
+        // Then
+        verify(mockReceiver).handleMessage(any(Telegram.class));
+    }
 }
 

@@ -27,7 +27,15 @@ package com.tenio.engine.exception;
 /**
  * When you try to dispose a non-existing heartbeat.
  */
-public final class HeartbeatNotFoundException extends Exception {
+public final class HeartbeatNotFoundException extends RuntimeException {
 
   private static final long serialVersionUID = 7597111087047955872L;
+
+  public HeartbeatNotFoundException() {
+    super("Heartbeat is not found");
+  }
+
+  public HeartbeatNotFoundException(String message) {
+    super(message);
+  }
 }

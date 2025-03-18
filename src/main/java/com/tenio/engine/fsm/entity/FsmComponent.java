@@ -33,19 +33,22 @@ import java.util.Objects;
  * <a href="https://en.wikipedia.org/wiki/Finite-state_machine#State/">FSM</a>
  * for more details.
  *
- * @param <T> the state template
+ * @param <T> the type of entity this FSM component can handle, must extend AbstractEntity
  */
-public final class FsmComponent<T> extends Component<T> {
+public final class FsmComponent<T extends AbstractEntity> extends Component<T> {
 
   private final MessageDispatcher dispatcher;
+
   /**
    * The current state, see {@link State}.
    */
   private State<T> currentState;
+
   /**
    * A record of the last state the agent was in, see {@link State}.
    */
   private State<T> previousState;
+
   /**
    * This is called every time the FSM is updated, see {@link State}.
    */

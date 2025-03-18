@@ -25,11 +25,12 @@ THE SOFTWARE.
 package com.tenio.engine.ecs.basis.implement;
 
 import com.tenio.common.logger.AbstractLogger;
-import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.Component;
 import com.tenio.engine.ecs.basis.Entity;
+import com.tenio.engine.ecs.pool.ComponentPool;
 import com.tenio.engine.exception.ComponentIsNotExistedException;
 import com.tenio.engine.exception.DuplicatedComponentException;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -43,7 +44,7 @@ import java.util.Objects;
  **/
 public class EntityImpl extends AbstractLogger implements Entity {
 
-  private ElementPool<Component>[] componentPools = null;
+  private Map<Class<? extends Component>, ComponentPool<? extends Component>> componentPools;
   private Component[] components = null;
   private ContextInfo contextInfo = null;
   private String id = null;
@@ -59,12 +60,12 @@ public class EntityImpl extends AbstractLogger implements Entity {
   }
 
   @Override
-  public ElementPool<Component>[] getComponentPools() {
+  public Map<Class<? extends Component>, ComponentPool<? extends Component>> getComponentPools() {
     return componentPools;
   }
 
   @Override
-  public void setComponentPools(ElementPool<Component>[] componentPools) {
+  public void setComponentPools(Map<Class<? extends Component>, ComponentPool<? extends Component>> componentPools) {
     if (Objects.isNull(this.componentPools)) {
       this.componentPools = componentPools;
     }
@@ -88,7 +89,7 @@ public class EntityImpl extends AbstractLogger implements Entity {
   @Override
   public void setComponent(int index, Component component) {
     if (hasComponent(index)) {
-      var exception = new DuplicatedComponentException();
+      var exception = new DuplicatedComponentException("Component already exists at index: " + index);
       if (isErrorEnabled()) {
         error(exception, "index: ", index);
       }
@@ -194,5 +195,14 @@ public class EntityImpl extends AbstractLogger implements Entity {
   @Override
   public void reset() {
     removeAllComponents();
+  }
+
+  @Override
+  public void addComponent(Component component) {
+    int index = contextInfo.getComponentIndex(component.getClass());
+    if (hasComponent(index)) {
+      throw new DuplicatedComponentException("Component of type " + component.getClass().getName() + " already exists");
+    }
+    components[index] = component;
   }
 }

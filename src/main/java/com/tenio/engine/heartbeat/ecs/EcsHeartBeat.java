@@ -57,43 +57,57 @@ public class EcsHeartBeat extends AbstractHeartBeat {
   }
 
   @Override
+  protected void onInitialization() {
+    // Initialize ECS components
+  }
+
+  @Override
   protected void onMessage(ExtraMessage message) {
+    // Handle messages
   }
 
   @Override
   protected void onUpdate(float deltaTime) {
+    // Update ECS systems
     systems.execute(deltaTime);
   }
 
   @Override
   protected void onRender(Paint paint) {
+    // Render ECS entities
     systems.render(paint);
   }
 
   @Override
   protected void onPause() {
+    // Pause ECS systems
     systems.paused(true);
   }
 
   @Override
   protected void onResume() {
+    // Resume ECS systems
     systems.paused(false);
   }
 
   @Override
   protected void onDispose() {
+    // Clean up ECS resources
     systems.tearDown();
   }
 
   @Override
   protected void onAction1() {
+    // Handle action 1
   }
 
   @Override
   protected void onAction2() {
+    // Handle action 2
   }
 
   @Override
   protected void onAction3() {
+    // Handle action 3
   }
 }

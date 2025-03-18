@@ -24,45 +24,73 @@ THE SOFTWARE.
 
 package com.tenio.engine.fsm.entity;
 
-import com.tenio.engine.fsm.MessageDispatcher;
 
 /**
- * Check out the <a href=
- * "https://en.wikipedia.org/wiki/Finite-state_machine#State/Event_table">State</a>
- * for more details.
+ * Defines the structure of a state in a Finite State Machine (FSM).
  *
- * @param <T> the entity template
+ * <p>This interface provides the core functionality needed to implement states in an FSM. Each state can
+ * handle entry and exit actions, update logic, and message handling.
+ *
+ * <p>Example implementation:
+ * {@code
+ * public class IdleState implements State<AbstractEntity> {
+ *     @Override
+ *     public void enter(AbstractEntity entity) {
+ *         // Perform entry actions
+ *     }
+ *
+ *     @Override
+ *     public void execute(AbstractEntity entity) {
+ *         // Update state logic
+ *     }
+ *
+ *     @Override
+ *     public void exit(AbstractEntity entity) {
+ *         // Perform exit actions
+ *     }
+ *
+ *     @Override
+ *     public boolean onMessage(AbstractEntity entity, Telegram telegram) {
+ *         // Handle messages
+ *         return true;
+ *     }
+ * }
+ * }
+ *
+ * @param <T> The type of entity this state can handle
+ * @see com.tenio.engine.fsm.entity.AbstractEntity
+ * @see com.tenio.engine.fsm.entity.Telegram
+ * @since 0.5.0
  */
-public abstract class State<T> {
+public interface State<T extends AbstractEntity> {
 
   /**
-   * This will execute when the state is entered.
+   * Called when the state is entered.
    *
-   * @param entity the current entity
+   * @param entity the entity entering this state
    */
-  public abstract void enter(T entity);
+  void enter(T entity);
 
   /**
-   * This is the state's normal update function.
+   * Called by the FSM's update function.
    *
-   * @param entity the current entity
+   * @param entity the entity in this state
    */
-  public abstract void execute(T entity);
+  void execute(T entity);
 
   /**
-   * This will execute when the state is exited.
+   * Called when the state is exited.
    *
-   * @param entity the current entity
+   * @param entity the entity exiting this state
    */
-  public abstract void exit(T entity);
+  void exit(T entity);
 
   /**
-   * This executes if the agent receives a message from the message dispatcher,
-   * see {@link MessageDispatcher}.
+   * This executes if the entity receives a message from the message dispatcher.
    *
-   * @param entity the current entity
-   * @param msg    the message that sent to this current entity
-   * @return <b>true</b> if the message was sent successful, <b>false</b> otherwise
+   * @param entity   the entity receiving the message
+   * @param telegram the message
+   * @return true if the message was handled
    */
-  public abstract boolean onMessage(T entity, Telegram msg);
+  boolean onMessage(T entity, Telegram telegram);
 }

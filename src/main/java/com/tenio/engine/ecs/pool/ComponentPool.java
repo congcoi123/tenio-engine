@@ -25,126 +25,208 @@ THE SOFTWARE.
 package com.tenio.engine.ecs.pool;
 
 import com.tenio.common.constant.CommonConstant;
-import com.tenio.common.exception.NullElementPoolException;
 import com.tenio.common.logger.SystemLogger;
 import com.tenio.common.pool.ElementPool;
 import com.tenio.engine.ecs.basis.Component;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * The object pool mechanism for {@link Component}.
+ * The ComponentPool class manages a pool of reusable components in the Entity
+ * Component System (ECS). It provides efficient memory management by recycling
+ * component instances instead of creating new ones.
+ *
+ * <p>
+ * Features:
+ * - Component instance pooling
+ * - Automatic pool expansion
+ * - Memory optimization
+ * - Type-safe component management
+ * </p>
+ *
+ * <p>
+ * The pool system supports:
+ * - Dynamic pool sizing
+ * - Component recycling
+ * - Memory efficiency
+ * - Performance optimization
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * {@code
+ * // Create a pool for components
+ * ComponentPool<Component> pool = new ComponentPool<>(
+ *     Component.class,
+ *     100  // Initial capacity
+ * );
+ * 
+ * // Get a component from the pool
+ * Component component = pool.get();
+ * 
+ * // Return component to the pool when done
+ * pool.repay(component);
+ * 
+ * // Create multiple components
+ * List<Component> components = pool.getAll(10);
+ * 
+ * // Return multiple components
+ * pool.repayAll(components);
+ * }
+ * </p>
+ *
+ * @param <T> the type of component managed by this pool
+ * @see com.tenio.engine.ecs.basis.Component
+ * @since 0.5.0
  */
-public final class ComponentPool extends SystemLogger implements ElementPool<Component> {
+public final class ComponentPool<T extends Component> extends SystemLogger implements ElementPool<T> {
 
-  private final Class<?> clazz;
+  private final Class<T> componentClass;
   @GuardedBy("this")
-  private Component[] pool;
+  private List<T> availableComponents;
   @GuardedBy("this")
-  private boolean[] used;
+  private List<T> usedComponents;
 
   /**
-   * Initialization.
+   * Creates a new component pool with the specified initial capacity.
    *
-   * @param clazz the class of element
+   * @param componentClass the class of components to manage
+   * @param initialSize   the initial size of the pool
    */
-  public ComponentPool(Class<?> clazz) {
-    this.clazz = clazz;
-    pool = new Component[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
-    used = new boolean[CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL];
+  public ComponentPool(Class<T> componentClass, int initialSize) {
+    this.componentClass = componentClass;
+    this.availableComponents = new ArrayList<>(initialSize);
+    this.usedComponents = new ArrayList<>(initialSize);
 
-    for (int i = 0; i < pool.length; i++) {
+    // Initialize the pool with components
+    for (int i = 0; i < initialSize; i++) {
       try {
-        var component = (Component) this.clazz.getDeclaredConstructor().newInstance();
-        pool[i] = component;
-        used[i] = false;
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException | NoSuchMethodException | SecurityException exception) {
-        if (isErrorEnabled()) {
-          error(exception);
-        }
+        availableComponents.add(componentClass.getDeclaredConstructor().newInstance());
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create component instance", e);
       }
     }
   }
 
+  /**
+   * Gets a component from the pool. If no components are available,
+   * the pool will automatically expand.
+   *
+   * @return a component instance
+   */
   @Override
-  public synchronized Component get() {
-    for (int i = 0; i < used.length; i++) {
-      if (!used[i]) {
-        used[i] = true;
-        return pool[i];
-      }
+  public synchronized T get() {
+    if (availableComponents.isEmpty()) {
+      expandPool();
     }
-    // If we got here, then all the Elements are in use. We will
-    // increase the number in our pool by @ADD_ELEMENT_POOL (arbitrary value for
-    // illustration purposes).
-    var oldUsed = used;
-    used = new boolean[oldUsed.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-    System.arraycopy(oldUsed, 0, used, 0, oldUsed.length);
-
-    var oldPool = pool;
-    pool = new Component[oldPool.length + CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL];
-    System.arraycopy(oldPool, 0, pool, 0, oldPool.length);
-
-    for (int i = oldPool.length; i < pool.length; i++) {
-      try {
-        pool[i] = (Component) clazz.getDeclaredConstructor().newInstance();
-        used[i] = false;
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException | NoSuchMethodException | SecurityException exception) {
-        if (isErrorEnabled()) {
-          error(exception);
-        }
-      }
-    }
-
-    if (isInfoEnabled()) {
-      info("COMPONENT POOL", buildgen("Increase the number of elements by ",
-          CommonConstant.ADDITIONAL_NUMBER_ELEMENTS_POOL, " to ", used.length));
-    }
-
-    // and allocate the last old ELement
-    used[oldPool.length - 1] = true;
-    return pool[oldPool.length - 1];
+    T component = availableComponents.remove(availableComponents.size() - 1);
+    usedComponents.add(component);
+    return component;
   }
 
-  @Override
-  public synchronized void repay(Component element) {
-    boolean flagFound = false;
-    for (int i = 0; i < pool.length; i++) {
-      if (pool[i] == element) {
-        used[i] = false;
-        flagFound = true;
-        break;
-      }
+  /**
+   * Gets multiple components from the pool.
+   *
+   * @param count the number of components to get
+   * @return a list of component instances
+   */
+  public List<T> getAll(int count) {
+    List<T> components = new ArrayList<>(count);
+    for (int i = 0; i < count; i++) {
+      components.add(get());
     }
-    if (!flagFound) {
-      var exception = new NullElementPoolException(element.toString());
-      if (isErrorEnabled()) {
-        error(exception);
+    return components;
+  }
+
+  /**
+   * Returns a component to the pool.
+   *
+   * @param component the component to return
+   */
+  @Override
+  public synchronized void repay(T component) {
+    if (usedComponents.remove(component)) {
+      availableComponents.add(component);
+    }
+  }
+
+  /**
+   * Returns multiple components to the pool.
+   *
+   * @param components the components to return
+   */
+  public void repayAll(List<T> components) {
+    for (T component : components) {
+      repay(component);
+    }
+  }
+
+  /**
+   * Gets the number of available components in the pool.
+   *
+   * @return the number of available components
+   */
+  public int getAvailableCount() {
+    return availableComponents.size();
+  }
+
+  /**
+   * Gets the number of components currently in use.
+   *
+   * @return the number of used components
+   */
+  public int getUsedCount() {
+    return usedComponents.size();
+  }
+
+  /**
+   * Expands the pool by creating new component instances.
+   */
+  private void expandPool() {
+    int currentSize = availableComponents.size() + usedComponents.size();
+    int expansionSize = Math.max(10, currentSize / 2);
+
+    for (int i = 0; i < expansionSize; i++) {
+      try {
+        availableComponents.add(componentClass.getDeclaredConstructor().newInstance());
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create component instance", e);
       }
-      throw exception;
     }
   }
 
   @Override
   public synchronized void cleanup() {
-    Arrays.fill(pool, null);
-    used = null;
-    pool = null;
+    // Reset to initial size
+    availableComponents.clear();
+    usedComponents.clear();
+
+    // Reinitialize all components
+    for (int i = 0; i < CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL; i++) {
+      try {
+        availableComponents.add((T) componentClass.getDeclaredConstructor().newInstance());
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | NoSuchMethodException | SecurityException exception) {
+        if (isErrorEnabled()) {
+          error(exception);
+        }
+      }
+    }
   }
 
   @Override
   public synchronized int getPoolSize() {
-    return (pool.length == used.length) ? pool.length : -1;
+    return (availableComponents.size() + usedComponents.size() == CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL) ?
+        CommonConstant.DEFAULT_NUMBER_ELEMENTS_POOL : -1;
   }
 
   @Override
   public int getAvailableSlot() {
     int slot = 0;
-    for (boolean b : used) {
-      if (!b) {
+    for (T component : availableComponents) {
+      if (component != null) {
         slot++;
       }
     }

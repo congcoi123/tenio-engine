@@ -42,10 +42,43 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
- * The game loop is the overall flow control for the entire game program. It's a
- * loop because the game keeps doing a series of actions over and over again
- * until the user quits. If a game runs at 60 FPS (frames per second), this
- * means that the game loop completes 60 iterations every second.
+ * Abstract base class for implementing heartbeat functionality.
+ *
+ * <p>This class provides the core functionality for managing game loop timing and updates.
+ * It handles frame rate control, time step calculations, and rendering updates.
+ *
+ * <p>Example implementation:
+ * {@code
+ * public class GameHeartBeat extends AbstractHeartBeat {
+ *     @Override
+ *     public void onInitialize() {
+ *         // Initialize game state
+ *     }
+ *
+ *     @Override
+ *     public void onUpdate(float deltaTime) {
+ *         // Update game logic
+ *     }
+ *
+ *     @Override
+ *     public void onRender(Graphics2D g, int width, int height) {
+ *         // Render game state
+ *     }
+ *
+ *     @Override
+ *     public void onPause() {
+ *         // Handle pause state
+ *     }
+ *
+ *     @Override
+ *     public void onResume() {
+ *         // Handle resume state
+ *     }
+ * }
+ * }
+ *
+ * @see com.tenio.engine.heartbeat.HeartBeatManager
+ * @since 0.5.0
  */
 public abstract class AbstractHeartBeat extends AbstractLogger
     implements Callable<Void>, ActionListener {
@@ -151,7 +184,7 @@ public abstract class AbstractHeartBeat extends AbstractLogger
   private void start() {
     // seed random number generator
     MathUtility.setSeed(0);
-    onCreate();
+    onInitialization();
     // main loop
     loop();
   }
@@ -264,16 +297,14 @@ public abstract class AbstractHeartBeat extends AbstractLogger
         // get current time
         double currentTime = TimeUtility.currentTimeSeconds();
 
-        // now peek at the queue to see if any telegrams need dispatching.
-        // remove all telegrams from the front of the queue that have gone
-        // past their sell by date
-        while (!listener.isEmpty() && (listener.last().getDelayTime() < currentTime)) {
-          // read the message from the front of the queue
-          var message = listener.last();
-          // listening
+        // Process messages that are ready to be delivered
+        while (!listener.isEmpty()) {
+          var message = listener.first(); // Get earliest message
+          if (message.getDelayTime() > currentTime) {
+            break; // No more messages ready
+          }
           onMessage(message.getMessage());
-          // remove it from the queue
-          listener.remove(message);
+          listener.pollFirst(); // Remove and get next
         }
 
         // Main update
@@ -285,21 +316,17 @@ public abstract class AbstractHeartBeat extends AbstractLogger
 
       // If for some reason an update takes forever, we don't want to do an insane
       // number of catch-ups.
-      // If you were doing some sort of game that needed to keep EXACT time, you would
-      // get rid of this.
       if (now - lastUpdateTime > TIME_BETWEEN_UPDATES) {
         lastUpdateTime = now - TIME_BETWEEN_UPDATES;
       }
 
-      // Render. To do so, we need to calculate interpolation for a smooth render.
-      // float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) /
-      // TIME_BETWEEN_UPDATES));
+      // Render if debugging
       if (debugging) {
         draw();
       }
       lastRenderTime = now;
 
-      // Update the frames we got.
+      // Update FPS counter
       int thisSecond = (int) (lastUpdateTime / 1000000000);
       if (thisSecond > lastSecondTime) {
         currentFps = frameCount;
@@ -307,28 +334,16 @@ public abstract class AbstractHeartBeat extends AbstractLogger
         lastSecondTime = thisSecond;
       }
 
-      // Yield until it has been at least the target time between renders. This saves
-      // the CPU from hogging.
-      while (now - lastRenderTime < TIME_BETWEEN_RENDER
-          && now - lastUpdateTime < TIME_BETWEEN_UPDATES) {
-        Thread.yield();
-
-        // This stops the application from consuming all your CPU. It makes this
-        // slightly less
-        // accurate, but is worth it.
-        // You can remove this line and it will still work (better), your CPU just
-        // climbs on certain OSes.
-        // FYI on some OS's this can cause pretty bad shuttering. Scroll down and have a
-        // look at different peoples' solutions to this.
+      // Sleep to maintain target frame rate
+      long sleepTime = (long)((TIME_BETWEEN_RENDER - (now - lastRenderTime)) / 1000000);
+      if (sleepTime > 0) {
         try {
-          Thread.sleep(1);
-        } catch (Exception e) {
-          // can dispose
+          Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt(); // Preserve interrupt status
           onDispose();
           return;
         }
-
-        now = System.nanoTime();
       }
 
       // update counter
@@ -343,16 +358,34 @@ public abstract class AbstractHeartBeat extends AbstractLogger
     gamePanel.repaint();
   }
 
+  /**
+   * Sets the first action text and its color.
+   *
+   * @param text  the text to display for action 1
+   * @param color the color of the text
+   */
   public void setTextAction1(String text, Color color) {
     action1.setText(text);
     action1.setBackground(color);
   }
 
+  /**
+   * Sets the second action text and its color.
+   *
+   * @param text  the text to display for action 2
+   * @param color the color of the text
+   */
   public void setTextAction2(String text, Color color) {
     action2.setText(text);
     action2.setBackground(color);
   }
 
+  /**
+   * Sets the third action text and its color.
+   *
+   * @param text  the text to display for action 3
+   * @param color the color of the text
+   */
   public void setTextAction3(String text, Color color) {
     action3.setText(text);
     action3.setBackground(color);
@@ -365,9 +398,14 @@ public abstract class AbstractHeartBeat extends AbstractLogger
   }
 
   /**
-   * It is called when start a game loop.
+   * Called when the heart-beat is created.
    */
   protected abstract void onCreate();
+
+  /**
+   * Called when the heart-beat is initialized.
+   */
+  protected abstract void onInitialization();
 
   /**
    * It is called when the heart-beat receives a message from outside.
@@ -377,9 +415,10 @@ public abstract class AbstractHeartBeat extends AbstractLogger
   protected abstract void onMessage(ExtraMessage message);
 
   /**
-   * It is called every frame in a game loop.
+   * Called each update cycle.
+   * Override this method to implement the main update logic.
    *
-   * @param deltaTime the time between two frames
+   * @param deltaTime the time elapsed since the last update in seconds
    */
   protected abstract void onUpdate(float deltaTime);
 
@@ -391,19 +430,20 @@ public abstract class AbstractHeartBeat extends AbstractLogger
   protected abstract void onRender(Paint paint);
 
   /**
-   * It is called when you call {@link #pause(boolean)} with <b>true</b>
-   * parameter.
+   * Called when the heartbeat is paused.
+   * Override this method to handle pausing game systems.
    */
   protected abstract void onPause();
 
   /**
-   * It is called when you call {@link #pause(boolean)} with <b>false</b>
-   * parameter.
+   * Called when the heartbeat is resumed.
+   * Override this method to handle resuming game systems.
    */
   protected abstract void onResume();
 
   /**
-   * It is called when the game loop is stopped or destroyed.
+   * Called when the heartbeat is disposed.
+   * Override this method to clean up any resources.
    */
   protected abstract void onDispose();
 

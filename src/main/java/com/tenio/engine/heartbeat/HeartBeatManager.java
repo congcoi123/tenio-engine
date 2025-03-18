@@ -27,11 +27,21 @@ package com.tenio.engine.heartbeat;
 import com.tenio.engine.message.ExtraMessage;
 
 /**
- * The Java ExecutorService is a construct that allows you to pass a task to be
- * executed by a thread asynchronously. The executor service creates and
- * maintains a reusable pool of threads for executing submitted tasks. This
- * class helps you create and manage your HeartBeats. See:
- * {@link AbstractHeartBeat}
+ * Interface for managing heartbeat functionality in the game engine.
+ *
+ * <p>This interface defines the core functionality for managing game loop timing and updates.
+ * It provides methods for registering, removing, and controlling heartbeat operations.
+ *
+ * <p>Example usage:
+ * {@code
+ * HeartBeatManager manager = new HeartBeatManagerImpl();
+ * manager.initialize();
+ * manager.create(1, new GameHeartBeat());
+ * manager.start(1);
+ * }
+ *
+ * @see com.tenio.engine.heartbeat.AbstractHeartBeat
+ * @since 0.5.0
  */
 public interface HeartBeatManager {
 

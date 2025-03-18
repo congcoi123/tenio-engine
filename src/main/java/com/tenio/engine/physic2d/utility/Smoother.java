@@ -3,6 +3,7 @@ package com.tenio.engine.physic2d.utility;
 import com.tenio.engine.physic2d.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Template class to help calculate the average value of a history of values.
@@ -66,7 +67,7 @@ public class Smoother<T extends Number> {
       System.exit(1);
     }
 
-    var it = histories.listIterator();
+    ListIterator<T> it = histories.listIterator();
 
     while (it.hasNext()) {
       sum = add(sum, it.next());
