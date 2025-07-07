@@ -29,7 +29,6 @@ import com.tenio.engine.exception.HeartbeatNotFoundException;
 import com.tenio.engine.message.ExtraMessage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,7 +94,7 @@ public final class HeartBeatManagerImpl extends SystemLogger implements HeartBea
       }
 
       var future = threadsManager.get(id);
-      if (Objects.isNull(future)) {
+      if (future == null) {
         throw new NullPointerException();
       }
 
@@ -120,7 +119,7 @@ public final class HeartBeatManagerImpl extends SystemLogger implements HeartBea
 
   @Override
   public synchronized void clear() {
-    if (Objects.nonNull(executorService)) {
+    if (executorService != null) {
       executorService.shutdownNow();
     }
     executorService = null;
