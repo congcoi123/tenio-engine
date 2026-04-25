@@ -176,5 +176,37 @@ class FsmComponentTest {
     assertNull(actualFsmComponent.getGlobalState());
     assertNull(actualFsmComponent.getPreviousState());
   }
+
+  @Test
+  void testIsInStateFalseWithDifferentClasses() {
+    FsmComponent<Object> fsmComponent =
+        new FsmComponent<>(new MessageDispatcher(new EntityManager()), "Entity");
+    State<Object> stateA = new State<Object>() {
+      @Override
+      public void enter(Object entity) {}
+      @Override
+      public void execute(Object entity) {}
+      @Override
+      public void exit(Object entity) {}
+      @Override
+      public boolean onMessage(Object entity, Telegram msg) {
+        return false;
+      }
+    };
+    State<Object> stateB = new State<Object>() {
+      @Override
+      public void enter(Object entity) {}
+      @Override
+      public void execute(Object entity) {}
+      @Override
+      public void exit(Object entity) {}
+      @Override
+      public boolean onMessage(Object entity, Telegram msg) {
+        return false;
+      }
+    };
+    fsmComponent.setCurrentState(stateA);
+    assertFalse(fsmComponent.isInState(stateB));
+  }
 }
 

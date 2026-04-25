@@ -485,5 +485,33 @@ class EntitiesRelationshipTest {
     verify(baseGameEntity).getId();
     verify(baseGameEntity).getPosition();
   }
+
+  @Test
+  void testGetGetEntityLineSegmentIntersectionsEntityOutOfRange() {
+    BaseGameEntity entity = mock(BaseGameEntity.class);
+    when(entity.getId()).thenReturn("not-ignored");
+    var pos = Vector2.newInstance();
+    pos.set(100.0f, 100.0f);
+    when(entity.getPosition()).thenReturn(pos);
+    ArrayList<BaseGameEntity> list = new ArrayList<>();
+    list.add(entity);
+    var result = EntitiesRelationship
+        .<BaseGameEntity, ArrayList<BaseGameEntity>>getGetEntityLineSegmentIntersections(
+            list, "ignored", Vector2.newInstance(), Vector2.newInstance(), 10.0f);
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testGetClosestEntityLineSegmentIntersectionWithMatchingIgnoreId() {
+    BaseGameEntity baseGameEntity = mock(BaseGameEntity.class);
+    when(baseGameEntity.getId()).thenReturn("ignoreMe");
+    when(baseGameEntity.getPosition()).thenReturn(Vector2.newInstance());
+
+    ArrayList<BaseGameEntity> list = new ArrayList<>();
+    list.add(baseGameEntity);
+    assertNull(
+        EntitiesRelationship.<BaseGameEntity, ArrayList<BaseGameEntity>>getClosestEntityLineSegmentIntersection(
+            list, "ignoreMe", Vector2.newInstance(), Vector2.newInstance(), 10.0f));
+  }
 }
 

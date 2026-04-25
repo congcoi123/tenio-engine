@@ -38,6 +38,8 @@ import com.tenio.engine.ecs.model.GameComponent;
 import com.tenio.engine.ecs.model.GameContext;
 import com.tenio.engine.ecs.model.GameEntity;
 import com.tenio.engine.ecs.model.component.Position;
+import com.tenio.engine.ecs.model.component.View;
+import com.tenio.engine.exception.ComponentIsNotExistedException;
 import com.tenio.engine.exception.DuplicatedComponentException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -196,6 +198,32 @@ class EcsContextTest {
   @Test
   public void equalsWithDifferentClassShouldReturnFalse() {
     assertFalse(gameEntity.equals("not an entity"));
+  }
+
+  @Test
+  public void getEntityByIdShouldReturnEntity() {
+    var found = gameContext.getEntity(gameEntity.getId());
+    assertSame(gameEntity, found);
+  }
+
+  @Test
+  public void removePositionDirectlyShouldSucceed() {
+    assertTrue(gameEntity.hasPosition());
+    gameEntity.removePosition();
+    assertFalse(gameEntity.hasPosition());
+  }
+
+  @Test
+  public void removeAbsentComponentShouldThrowException() {
+    assertThrows(ComponentIsNotExistedException.class,
+        () -> gameEntity.removeComponent(GameComponent.VIEW));
+  }
+
+  @Test
+  public void replaceComponentWithNonNullOnAbsentShouldSetComponent() {
+    var view = new View();
+    assertDoesNotThrow(() -> gameEntity.replaceComponent(GameComponent.VIEW, view));
+    assertTrue(gameEntity.isView());
   }
 
   @Test

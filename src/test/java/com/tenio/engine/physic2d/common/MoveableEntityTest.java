@@ -293,6 +293,15 @@ class MoveableEntityTest {
     assertFalse(entity.isRotatedHeadingToFacePosition(target));
   }
 
+  @Test
+  void testIsRotatedHeadingToFacePositionNanAngle() {
+    entity.setPosition(0.0f, 0.0f);
+    entity.setHeading(2.0f, 0.0f); // not normalized, dot product can exceed 1 → NaN from acos
+    var target = Vector2.newInstance();
+    target.set(1.0f, 0.0f);
+    assertTrue(entity.isRotatedHeadingToFacePosition(target));
+  }
+
   // ---- BaseGameEntity: position ----
 
   @Test

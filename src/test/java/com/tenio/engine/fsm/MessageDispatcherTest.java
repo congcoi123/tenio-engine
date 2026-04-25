@@ -7,8 +7,10 @@ import static org.mockito.Mockito.mock;
 
 import com.tenio.engine.fsm.entity.AbstractEntity;
 import com.tenio.engine.fsm.entity.Telegram;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -74,6 +76,19 @@ class MessageDispatcherTest {
   @Test
   void testClearDoesNotThrow() {
     assertDoesNotThrow(() -> dispatcher.clear());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testUpdateDispatchesPastDueTelegrams() throws Exception {
+    entityManager.register(new TestEntity("target", true));
+    // Create telegram with delay time in the past (Unix epoch second 1 is long past)
+    var pastTelegram = new Telegram(1.0, "sender", "target", 1, null);
+    Field field = MessageDispatcher.class.getDeclaredField("telegrams");
+    field.setAccessible(true);
+    TreeSet<Telegram> telegrams = (TreeSet<Telegram>) field.get(dispatcher);
+    telegrams.add(pastTelegram);
+    assertDoesNotThrow(() -> dispatcher.update(0.1f));
   }
 
   private static class TestEntity extends AbstractEntity {
