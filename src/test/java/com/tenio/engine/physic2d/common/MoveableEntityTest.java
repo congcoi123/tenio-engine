@@ -31,11 +31,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tenio.engine.fsm.entity.AbstractEntity;
 import com.tenio.engine.fsm.entity.Telegram;
+import com.tenio.engine.physic2d.common.BaseGameEntity;
 import com.tenio.engine.physic2d.math.Vector2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MoveableEntityTest {
+
+  private static final class SimpleEntity extends BaseGameEntity {
+
+    SimpleEntity(int type) {
+      super(type);
+    }
+
+    @Override
+    public void update(float deltaTime) {
+    }
+
+    @Override
+    public boolean handleMessage(Telegram msg) {
+      return false;
+    }
+  }
 
   private static final class TestEntity extends MoveableEntity {
 
@@ -433,5 +450,13 @@ class MoveableEntityTest {
     };
     ae.setId("changed");
     assertEquals("changed", ae.getId());
+  }
+
+  @Test
+  void testBaseGameEntityConstructorWithType() {
+    SimpleEntity e = new SimpleEntity(42);
+    assertEquals(42, e.getType());
+    assertEquals(1.0f, e.getScaleX(), 0.001f);
+    assertEquals(1.0f, e.getScaleY(), 0.001f);
   }
 }

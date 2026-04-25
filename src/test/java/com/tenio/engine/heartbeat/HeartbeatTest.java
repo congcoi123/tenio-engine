@@ -78,6 +78,18 @@ class HeartbeatTest {
     assertDoesNotThrow(() -> manager.clear());
   }
 
+  @Test
+  void testSendMessageWithDelayShouldSucceed() {
+    manager.create("hb1", new TestHeartBeat());
+    assertDoesNotThrow(() -> manager.sendMessage("hb1", null, 0.5));
+  }
+
+  @Test
+  void testSendMessageWithoutDelayShouldSucceed() {
+    manager.create("hb1", new TestHeartBeat());
+    assertDoesNotThrow(() -> manager.sendMessage("hb1", null));
+  }
+
   private static class TestHeartBeat extends AbstractHeartBeat {
 
     @Override

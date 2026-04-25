@@ -25,6 +25,7 @@ THE SOFTWARE.
 package com.tenio.engine.ecs;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,6 +68,17 @@ class ComponentPoolTest {
       View view = new View();
       componentPool.repay(view);
     });
+  }
+
+  @Test
+  public void repayAfterGetShouldSucceed() {
+    Component component = componentPool.get();
+    assertDoesNotThrow(() -> componentPool.repay(component));
+  }
+
+  @Test
+  public void getAvailableSlotShouldBeNonNegative() {
+    assertTrue(componentPool.getAvailableSlot() >= 0);
   }
 
   @Test

@@ -1,6 +1,7 @@
 package com.tenio.engine.physic2d.utility;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -616,6 +617,74 @@ class GeometryTest {
     posSecond.set(-10.0f, 0.0f);
     // fov = PI/2 (90 degrees) — target behind, not in fov
     assertFalse(Geometry.isSecondInFovoFirst(posFirst, facing, posSecond, (float) (Math.PI / 2)));
+  }
+
+  @Test
+  void testConstructorInstantiation() {
+    assertDoesNotThrow(() -> new Geometry());
+  }
+
+  @Test
+  void testIsTwoObjectsIntersectNonEmptyFalse() {
+    List<Vector2> obj1 = new ArrayList<>();
+    var v1 = Vector2.newInstance();
+    v1.set(0.0f, 0.0f);
+    var v2 = Vector2.newInstance();
+    v2.set(1.0f, 0.0f);
+    obj1.add(v1);
+    obj1.add(v2);
+
+    List<Vector2> obj2 = new ArrayList<>();
+    var v3 = Vector2.newInstance();
+    v3.set(5.0f, 5.0f);
+    var v4 = Vector2.newInstance();
+    v4.set(6.0f, 5.0f);
+    obj2.add(v3);
+    obj2.add(v4);
+
+    assertFalse(Geometry.isTwoObjectsIntersect(obj1, obj2));
+  }
+
+  @Test
+  void testIsSegmentObjectIntersectNonEmptyFalse() {
+    var a = Vector2.newInstance();
+    a.set(0.0f, 0.0f);
+    var b = Vector2.newInstance();
+    b.set(1.0f, 0.0f);
+
+    List<Vector2> obj = new ArrayList<>();
+    var v1 = Vector2.newInstance();
+    v1.set(5.0f, 5.0f);
+    var v2 = Vector2.newInstance();
+    v2.set(6.0f, 5.0f);
+    obj.add(v1);
+    obj.add(v2);
+
+    assertFalse(Geometry.isSegmentObjectIntersect(a, b, obj));
+  }
+
+  @Test
+  void testIsSegmentCircleClosestIntersectPointCircleBehindA() {
+    var a = Vector2.newInstance();
+    a.set(0.0f, 0.0f);
+    var b = Vector2.newInstance();
+    b.set(10.0f, 0.0f);
+    var c = Vector2.newInstance();
+    c.set(-10.0f, 0.0f);
+    var intersection = Vector2.newInstance();
+    assertFalse(Geometry.isSegmentCircleClosestIntersectPoint(a, b, c, 1.0f, intersection));
+  }
+
+  @Test
+  void testIsSegmentCircleClosestIntersectPointIpNegative() {
+    var a = Vector2.newInstance();
+    a.set(0.0f, 0.0f);
+    var b = Vector2.newInstance();
+    b.set(10.0f, 0.0f);
+    var c = Vector2.newInstance();
+    c.set(0.0f, 0.0f);
+    var intersection = Vector2.newInstance();
+    assertTrue(Geometry.isSegmentCircleClosestIntersectPoint(a, b, c, 1.0f, intersection));
   }
 }
 
