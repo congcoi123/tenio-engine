@@ -121,7 +121,13 @@ public final class EntitiesRelationship {
          * Temp = (EntityPosition - CurrentEntityPosition); Distance = Temp->getLength;
          * NewPosition = EntityPosition + ((Temp / Distance) * Amount)
          */
-        temp.div(distFromEachOther).mul(amountOfOverLap).add(entity.getPosition());
+        if (distFromEachOther == 0) {
+          temp.set(java.lang.System.identityHashCode(entity)
+              <= java.lang.System.identityHashCode(curEntity) ? -1 : 1, 0);
+        } else {
+          temp.div(distFromEachOther);
+        }
+        temp.mul(amountOfOverLap).add(entity.getPosition());
         entity.setPosition(temp);
       }
     } // next entity
