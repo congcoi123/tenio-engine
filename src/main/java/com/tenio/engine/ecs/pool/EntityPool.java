@@ -32,6 +32,7 @@ import com.tenio.engine.ecs.basis.Entity;
 import com.tenio.engine.ecs.basis.implement.ContextInfo;
 import com.tenio.engine.ecs.basis.implement.EntityImpl;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.concurrent.GuardedBy;
@@ -118,7 +119,7 @@ public final class EntityPool extends SystemLogger implements ElementPool<Entity
     for (var element : pool) {
       element.reset();
     }
-    java.util.Arrays.fill(used, false);
+    Arrays.fill(used, false);
   }
 
   @Override

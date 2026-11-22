@@ -122,8 +122,7 @@ public final class EntitiesRelationship {
          * NewPosition = EntityPosition + ((Temp / Distance) * Amount)
          */
         if (distFromEachOther == 0) {
-          temp.set(java.lang.System.identityHashCode(entity)
-              <= java.lang.System.identityHashCode(curEntity) ? -1 : 1, 0);
+          temp.set(System.identityHashCode(entity) <= System.identityHashCode(curEntity) ? -1 : 1, 0);
         } else {
           temp.div(distFromEachOther);
         }
